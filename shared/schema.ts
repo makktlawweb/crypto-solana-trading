@@ -84,7 +84,6 @@ export const backtestResults = pgTable("backtest_results", {
 // Insert Schemas
 export const insertTradingParametersSchema = createInsertSchema(tradingParameters).omit({
   id: true,
-  createdAt: true,
 });
 
 export const insertTokenSchema = createInsertSchema(tokens).omit({

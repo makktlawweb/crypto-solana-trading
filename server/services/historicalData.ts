@@ -88,32 +88,41 @@ export class HistoricalDataService {
 
   private async getTokensFromDexScreener(cutoffDate: Date): Promise<TokenData[]> {
     try {
-      // Get newly created tokens from DexScreener
-      const response = await axios.get(`${this.dexScreenerApi}/dex/tokens/solana`, {
+      // Use the working DexScreener endpoint
+      const response = await axios.get(`${this.dexScreenerApi}/dex/search`, {
+        params: { q: 'solana' },
         timeout: 30000,
       });
 
       const tokens: TokenData[] = [];
       
-      if (response.data?.pairs) {
+      if (response.data?.pairs && Array.isArray(response.data.pairs)) {
         for (const pair of response.data.pairs) {
-          const createdAt = new Date(pair.pairCreatedAt || pair.createdAt);
-          
-          if (createdAt >= cutoffDate && pair.baseToken) {
-            tokens.push({
-              address: pair.baseToken.address,
-              name: pair.baseToken.name || "Unknown",
-              symbol: pair.baseToken.symbol || "???",
-              marketCap: pair.marketCap || 0,
-              price: parseFloat(pair.priceUsd || "0"),
-              volume24h: pair.volume?.h24 || 0,
-              createdAt,
-              dexSource: "dexscreener",
-            });
+          if (pair.pairCreatedAt) {
+            const createdAt = new Date(pair.pairCreatedAt);
+            
+            if (createdAt >= cutoffDate) {
+              // Extract the non-SOL token from the pair
+              const token = pair.baseToken?.symbol !== 'SOL' ? pair.baseToken : pair.quoteToken;
+              
+              if (token && token.address && token.symbol !== 'SOL') {
+                tokens.push({
+                  address: token.address,
+                  name: token.name || "Unknown",
+                  symbol: token.symbol || "???",
+                  marketCap: pair.fdv || pair.marketCap || 0,
+                  price: parseFloat(pair.priceUsd || "0"),
+                  volume24h: pair.volume?.h24 || 0,
+                  createdAt,
+                  dexSource: pair.dexId || "raydium",
+                });
+              }
+            }
           }
         }
       }
 
+      console.log(`DexScreener: Retrieved ${tokens.length} tokens created after ${cutoffDate}`);
       return tokens;
     } catch (error) {
       console.error("DexScreener API error:", error);
