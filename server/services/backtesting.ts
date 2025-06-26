@@ -1,5 +1,6 @@
 import { storage } from "../storage";
 import { dexApiService } from "./dexApi";
+import { historicalDataService, type HistoricalTokenData } from "./historicalData";
 import type { StrategyConfig, InsertTrade, InsertBacktestResult, BacktestResult } from "@shared/schema";
 import { nanoid } from "nanoid";
 
@@ -39,16 +40,19 @@ export class BacktestingService {
     console.log(`Starting backtest ${backtestId} for ${timeframeHours} hours`);
 
     try {
-      // Get historical token data
-      const historicalTokens = await dexApiService.getHistoricalTokenData(timeframeHours);
+      // Get real historical token data from the past week
+      const daysBack = Math.ceil(timeframeHours / 24);
+      console.log(`Collecting historical data for ${daysBack} days...`);
       
-      if (historicalTokens.length === 0) {
-        // If no historical data available, generate some realistic sample data for demonstration
-        const sampleTokens = this.generateSampleTokenData(timeframeHours);
-        return await this.simulateStrategy(sampleTokens, strategy, backtestId);
+      const historicalData = await historicalDataService.collectHistoricalData(daysBack);
+      
+      if (historicalData.length === 0) {
+        console.log("No real API data available, using demonstration data to show strategy performance");
+        throw new Error(`No historical token data available for the last ${daysBack} days. Please ensure DEX API access is configured with proper API keys.`);
       }
 
-      const results = await this.simulateStrategy(historicalTokens, strategy, backtestId);
+      console.log(`Backtesting with ${historicalData.length} real tokens from the past ${daysBack} days`);
+      const results = await this.simulateStrategyWithRealData(historicalData, strategy, backtestId);
       
       // Store backtest results
       await this.storeBacktestResults(results, strategy, timeframeHours);
@@ -58,6 +62,230 @@ export class BacktestingService {
       console.error("Error running backtest:", error);
       throw error;
     }
+  }
+
+  private generateRealisticDemoData(daysBack: number): HistoricalTokenData[] {
+    const demoTokens: HistoricalTokenData[] = [];
+    const tokensPerDay = 100; // Simulate 100 new tokens per day
+    const totalTokens = daysBack * tokensPerDay;
+
+    for (let i = 0; i < totalTokens; i++) {
+      const createdAt = new Date(Date.now() - Math.random() * daysBack * 24 * 60 * 60 * 1000);
+      const tokenAddress = `demo_${i}_${Math.random().toString(36).substring(7)}`;
+      
+      // Generate realistic price history for first 3 minutes
+      const priceHistory = this.generateTokenPriceHistory(createdAt);
+      
+      demoTokens.push({
+        address: tokenAddress,
+        name: `DemoToken${i}`,
+        symbol: `DEMO${i}`,
+        createdAt,
+        priceHistory,
+        dexSource: "demo",
+      });
+    }
+
+    return demoTokens;
+  }
+
+  private generateTokenPriceHistory(createdAt: Date): Array<{
+    timestamp: Date;
+    price: number;
+    marketCap: number;
+    volume: number;
+    age: number;
+  }> {
+    const priceHistory = [];
+    const basePrice = 0.00001 + Math.random() * 0.0001; // Random starting price
+    const totalSupply = 1000000000; // 1B tokens
+    
+    // Generate 3 minutes of data with 5-second intervals
+    for (let seconds = 0; seconds < 180; seconds += 5) {
+      const timestamp = new Date(createdAt.getTime() + seconds * 1000);
+      
+      // Simulate typical new token price behavior
+      let priceMultiplier = 1;
+      
+      if (seconds < 30) {
+        // First 30 seconds: initial pump potential
+        priceMultiplier = 1 + Math.random() * 15; // 1x to 16x
+      } else if (seconds < 60) {
+        // Next 30 seconds: high volatility
+        priceMultiplier = 0.2 + Math.random() * 8; // 0.2x to 8.2x
+      } else if (seconds < 120) {
+        // Next minute: continued movement
+        priceMultiplier = 0.3 + Math.random() * 5; // 0.3x to 5.3x
+      } else {
+        // Final minute: stabilization or further movement
+        priceMultiplier = 0.5 + Math.random() * 3; // 0.5x to 3.5x
+      }
+      
+      const price = basePrice * priceMultiplier;
+      const marketCap = price * totalSupply;
+      const volume = Math.random() * marketCap * 0.05; // 0-5% of market cap
+      
+      priceHistory.push({
+        timestamp,
+        price,
+        marketCap,
+        volume,
+        age: seconds,
+      });
+    }
+    
+    return priceHistory;
+  }
+
+  private async simulateStrategyWithRealData(
+    historicalData: HistoricalTokenData[],
+    strategy: StrategyConfig,
+    backtestId: string
+  ): Promise<BacktestResults> {
+    const trades: BacktestTrade[] = [];
+    const equityCurve: { timestamp: Date; equity: number }[] = [];
+    let currentEquity = 10000; // Starting with $10,000
+    let maxEquity = currentEquity;
+    let maxDrawdown = 0;
+
+    // Process each token's first 3 minutes to test the strategy
+    for (const tokenData of historicalData) {
+      const tokenAge = Math.floor((Date.now() - tokenData.createdAt.getTime()) / 1000 / 60);
+      
+      // Only consider tokens that meet our age criteria
+      if (tokenAge > strategy.maxAge) continue;
+
+      const trade = await this.simulateTokenTradeWithRealData(tokenData, strategy);
+      
+      if (trade) {
+        trades.push(trade);
+        
+        // Update equity curve
+        const newEquity = currentEquity + trade.pnl;
+        equityCurve.push({
+          timestamp: trade.exitTime,
+          equity: newEquity,
+        });
+        
+        currentEquity = newEquity;
+        maxEquity = Math.max(maxEquity, currentEquity);
+        
+        // Calculate drawdown
+        const drawdown = (maxEquity - currentEquity) / maxEquity;
+        maxDrawdown = Math.max(maxDrawdown, drawdown);
+      }
+    }
+
+    return this.calculateBacktestMetrics(trades, equityCurve, backtestId, maxDrawdown);
+  }
+
+  private async simulateTokenTradeWithRealData(
+    tokenData: HistoricalTokenData,
+    strategy: StrategyConfig
+  ): Promise<BacktestTrade | null> {
+    const priceHistory = tokenData.priceHistory;
+    if (priceHistory.length === 0) return null;
+
+    let watchTriggered = false;
+    let buyExecuted = false;
+    let entryPrice = 0;
+    let entryTime: Date | null = null;
+
+    // Process each price point in the token's first 3 minutes
+    for (const pricePoint of priceHistory) {
+      const marketCap = pricePoint.marketCap;
+      const price = pricePoint.price;
+
+      // Check if token reaches watch threshold (e.g., 10K MC)
+      if (!watchTriggered && marketCap >= strategy.watchThreshold) {
+        watchTriggered = true;
+        continue;
+      }
+
+      // If watching, check for buy trigger (e.g., drops to 6K MC)
+      if (watchTriggered && !buyExecuted && marketCap <= strategy.buyTrigger) {
+        // Execute buy at configured price level (e.g., 8K MC)
+        const targetMarketCap = strategy.buyPrice;
+        if (marketCap <= targetMarketCap) {
+          buyExecuted = true;
+          entryPrice = price;
+          entryTime = pricePoint.timestamp;
+          continue;
+        }
+      }
+
+      // If position is open, check for exit conditions
+      if (buyExecuted && entryTime) {
+        const currentPnlPercent = ((price - entryPrice) / entryPrice) * 100;
+        
+        // Take profit condition (e.g., 2x = 100% gain)
+        const takeProfitPercent = (strategy.takeProfitMultiplier - 1) * 100;
+        if (currentPnlPercent >= takeProfitPercent) {
+          return this.createBacktestTrade(
+            tokenData,
+            entryPrice,
+            price,
+            entryTime,
+            pricePoint.timestamp,
+            "take_profit"
+          );
+        }
+
+        // Stop loss condition (e.g., -20%)
+        if (currentPnlPercent <= -strategy.stopLossPercent) {
+          return this.createBacktestTrade(
+            tokenData,
+            entryPrice,
+            price,
+            entryTime,
+            pricePoint.timestamp,
+            "stop_loss"
+          );
+        }
+      }
+    }
+
+    // If position is still open at end of data, close it
+    if (buyExecuted && entryTime && priceHistory.length > 0) {
+      const lastPrice = priceHistory[priceHistory.length - 1];
+      return this.createBacktestTrade(
+        tokenData,
+        entryPrice,
+        lastPrice.price,
+        entryTime,
+        lastPrice.timestamp,
+        "time_exit"
+      );
+    }
+
+    return null;
+  }
+
+  private createBacktestTrade(
+    tokenData: HistoricalTokenData,
+    entryPrice: number,
+    exitPrice: number,
+    entryTime: Date,
+    exitTime: Date,
+    exitReason: string
+  ): BacktestTrade {
+    const duration = (exitTime.getTime() - entryTime.getTime()) / 1000; // seconds
+    const pnlPercent = ((exitPrice - entryPrice) / entryPrice) * 100;
+    const positionSize = 1000; // $1000 per trade
+    const pnl = (positionSize * pnlPercent) / 100;
+
+    return {
+      tokenAddress: tokenData.address,
+      tokenName: tokenData.name,
+      entryPrice,
+      exitPrice,
+      entryTime,
+      exitTime,
+      duration,
+      pnl,
+      pnlPercent,
+      exitReason,
+    };
   }
 
   private async simulateStrategy(

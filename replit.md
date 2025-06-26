@@ -91,7 +91,8 @@ This is a full-stack Solana trading bot application built with React, TypeScript
 - **Port Configuration**: Express serves on port 5000
 
 ## Changelog
-- June 26, 2025. Initial setup
+- June 26, 2025. Initial setup with React frontend and Express backend
+- June 26, 2025. Integrated PostgreSQL database for persistent storage of trading data, parameters, and backtest results
 
 ## User Preferences
 
