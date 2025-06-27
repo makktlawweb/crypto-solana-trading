@@ -29,6 +29,20 @@ export interface BacktestResults {
   sharpeRatio: number;
   trades: BacktestTrade[];
   equityCurve: { timestamp: Date; equity: number }[];
+  analysisStats?: {
+    tokensAnalyzed: number;
+    tokensHitWatchThreshold: number;
+    tokensHadTradingOpportunity: number;
+    watchHitRate: number;
+    opportunityRate: number;
+    strategy: {
+      watchThreshold: number;
+      buyTrigger: number;
+      buyPrice: number;
+      takeProfitMultiplier: number;
+      stopLossPercent: number;
+    };
+  };
 }
 
 export class BacktestingService {
@@ -201,13 +215,33 @@ export class BacktestingService {
       }
     }
 
+    const opportunityRate = ((tokensHadTradingOpportunity / tokensHitWatchThreshold) * 100).toFixed(1);
+    const hitRate = ((tokensHitWatchThreshold / tokensAnalyzed) * 100).toFixed(1);
+    
     console.log(`Analysis Results:`);
     console.log(`- Tokens analyzed: ${tokensAnalyzed}`);
-    console.log(`- Tokens hit watch threshold (${strategy.watchThreshold}K): ${tokensHitWatchThreshold}`);
-    console.log(`- Tokens with trading opportunities: ${tokensHadTradingOpportunity}`);
-    console.log(`- Success rate: ${((tokensHadTradingOpportunity / tokensHitWatchThreshold) * 100).toFixed(1)}%`);
-
-    return this.calculateBacktestMetrics(trades, equityCurve, backtestId);
+    console.log(`- Tokens hit watch threshold (${strategy.watchThreshold}K): ${tokensHitWatchThreshold} (${hitRate}%)`);
+    console.log(`- Tokens with trading opportunities: ${tokensHadTradingOpportunity} (${opportunityRate}%)`);
+    
+    const results = this.calculateBacktestMetrics(trades, equityCurve, backtestId);
+    
+    // Add detailed optimization statistics
+    (results as any).analysisStats = {
+      tokensAnalyzed,
+      tokensHitWatchThreshold,
+      tokensHadTradingOpportunity,
+      watchHitRate: parseFloat(hitRate),
+      opportunityRate: parseFloat(opportunityRate),
+      strategy: {
+        watchThreshold: strategy.watchThreshold,
+        buyTrigger: strategy.buyTrigger,
+        buyPrice: strategy.buyPrice,
+        takeProfitMultiplier: strategy.takeProfitMultiplier,
+        stopLossPercent: strategy.stopLossPercent
+      }
+    };
+    
+    return results;
   }
 
   private findTradingOpportunity(token: HistoricalTokenData, strategy: StrategyConfig) {
