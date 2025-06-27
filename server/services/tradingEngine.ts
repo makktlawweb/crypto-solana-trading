@@ -72,31 +72,67 @@ export class TradingEngine {
 
   private async checkForNewTokens(params: StrategyConfig): Promise<void> {
     try {
-      const newTokens = await dexApiService.getNewTokensFromPumpFun(params.maxAge);
+      // Use DexScreener API directly to get real token data
+      const response = await fetch('https://api.dexscreener.com/latest/dex/search?q=solana');
       
-      for (const tokenData of newTokens) {
-        const existingToken = await storage.getTokenByAddress(tokenData.address);
-        if (existingToken) continue;
+      if (!response.ok) {
+        console.log("DexScreener API not available");
+        return;
+      }
 
-        // Check if token meets watch threshold
-        if (tokenData.marketCap >= params.watchThreshold) {
-          await storage.createToken({
-            address: tokenData.address,
-            name: tokenData.name,
-            symbol: tokenData.symbol,
-            marketCap: tokenData.marketCap,
-            price: tokenData.price,
-            volume24h: tokenData.volume24h,
-            age: this.calculateTokenAge(tokenData.createdAt),
-            status: "watching",
-            dexSource: tokenData.dexSource,
-          });
-
-          await this.createAlert({
-            type: "info",
-            message: `New token added to watchlist: ${tokenData.name} (${tokenData.symbol})`,
-            tokenAddress: tokenData.address,
-          });
+      const data = await response.json();
+      
+      if (data?.pairs && Array.isArray(data.pairs)) {
+        let newTokensFound = 0;
+        
+        for (const pair of data.pairs.slice(0, 50)) {
+          // Extract the non-SOL token from each pair
+          const token = pair.baseToken?.symbol !== 'SOL' ? pair.baseToken : pair.quoteToken;
+          
+          if (token && token.address && token.symbol !== 'SOL' && token.symbol !== 'USDC') {
+            const existingToken = await storage.getTokenByAddress(token.address);
+            
+            if (!existingToken) {
+              const marketCap = pair.fdv || pair.marketCap || 0;
+              const price = parseFloat(pair.priceUsd || "0");
+              const volume24h = pair.volume?.h24 || 0;
+              
+              // Add all discovered tokens to database
+              const newToken = await storage.createToken({
+                address: token.address,
+                name: token.name || "Unknown",
+                symbol: token.symbol,
+                marketCap,
+                price,
+                volume24h,
+                age: 3600, // Estimated age since creation date not available
+                status: marketCap >= params.watchThreshold ? "watching" : "new",
+                dexSource: pair.dexId || "raydium",
+                createdAt: new Date(),
+              });
+              
+              newTokensFound++;
+              
+              // Create appropriate alerts based on market cap
+              if (marketCap >= params.watchThreshold) {
+                await this.createAlert({
+                  type: "success",
+                  message: `Token ${newToken.symbol} meets watch criteria: $${marketCap.toLocaleString()} MC`,
+                  tokenAddress: newToken.address,
+                });
+              } else if (marketCap > 1000) {
+                await this.createAlert({
+                  type: "info",
+                  message: `New token found: ${newToken.symbol} - $${marketCap.toLocaleString()} MC`,
+                  tokenAddress: newToken.address,
+                });
+              }
+            }
+          }
+        }
+        
+        if (newTokensFound > 0) {
+          console.log(`Discovered ${newTokensFound} new tokens from DexScreener`);
         }
       }
     } catch (error) {
