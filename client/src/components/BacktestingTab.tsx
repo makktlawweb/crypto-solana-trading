@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Play, BarChart3 } from "lucide-react";
+import { Play, BarChart3, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -14,6 +14,7 @@ export default function BacktestingTab() {
   const { toast } = useToast();
   const [timeframe, setTimeframe] = useState("1d");
   const [backtestResults, setBacktestResults] = useState<any>(null);
+  const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
 
   const runBacktestMutation = useMutation({
     mutationFn: async (params: { timeframe: string }) => {
@@ -38,6 +39,24 @@ export default function BacktestingTab() {
 
   const handleRunBacktest = () => {
     runBacktestMutation.mutate({ timeframe });
+  };
+
+  const copyTokenAddress = async (tokenAddress: string, tokenName: string) => {
+    try {
+      await navigator.clipboard.writeText(tokenAddress);
+      setCopiedAddress(tokenAddress);
+      toast({
+        title: "Copied!",
+        description: `${tokenName} address copied to clipboard`,
+      });
+      setTimeout(() => setCopiedAddress(null), 2000);
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to copy address",
+        variant: "destructive",
+      });
+    }
   };
 
   const getExitReasonBadge = (reason: string) => {
@@ -180,7 +199,23 @@ export default function BacktestingTab() {
                         <TableCell className="font-mono text-sm text-gray-300">
                           {new Date(trade.entryTime).toLocaleDateString()} {new Date(trade.entryTime).toLocaleTimeString()}
                         </TableCell>
-                        <TableCell className="font-medium text-white">{trade.tokenName}</TableCell>
+                        <TableCell className="font-medium text-white">
+                          <div className="flex items-center gap-2">
+                            <span>{trade.tokenName}</span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0 hover:bg-gray-600"
+                              onClick={() => copyTokenAddress(trade.tokenAddress, trade.tokenName)}
+                            >
+                              <Copy className={`h-3 w-3 ${
+                                copiedAddress === trade.tokenAddress 
+                                  ? 'text-green-400' 
+                                  : 'text-gray-400 hover:text-white'
+                              }`} />
+                            </Button>
+                          </div>
+                        </TableCell>
                         <TableCell className="font-mono text-sm text-gray-300">
                           ${trade.entryPrice.toFixed(6)}
                         </TableCell>

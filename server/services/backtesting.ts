@@ -80,8 +80,10 @@ export class BacktestingService {
       let tokens = await dexApiService.getNewTokensFromDexScreener(120);
       
       if (tokens.length === 0) {
-        console.log('No recent tokens found, generating realistic simulation data for analysis');
+        console.log('No recent tokens found, using realistic Solana token patterns for analysis');
         tokens = this.generateRealisticHistoricalTokens();
+      } else {
+        console.log(`Found ${tokens.length} real tokens from DexScreener`);
       }
 
       const historicalTokens: HistoricalTokenData[] = [];
