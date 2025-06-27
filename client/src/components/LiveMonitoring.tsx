@@ -16,15 +16,13 @@ export default function LiveMonitoring() {
   const { data: status = {} } = useQuery({
     queryKey: ["/api/status"],
     refetchInterval: 5000,
-    retry: false,
-    onError: () => {} // Prevent unhandled rejection
+    retry: false
   });
 
   const { data: tokens = [] } = useQuery({
     queryKey: ["/api/tokens"],
     refetchInterval: 10000,
-    retry: false,
-    onError: () => {} // Prevent unhandled rejection
+    retry: false
   });
 
   const startMonitoringMutation = useMutation({

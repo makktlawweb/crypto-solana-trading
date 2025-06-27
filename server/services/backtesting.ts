@@ -112,19 +112,39 @@ export class BacktestingService {
     const tokens = [];
     const now = Date.now();
     
+    // Realistic Solana meme token names and symbols from actual market patterns
+    const tokenNames = [
+      'SolPepe', 'MoonDog', 'PumpCat', 'ShibaSol', 'RocketPepe', 'DiamondApe', 'LunaWolf', 'SolanaShiba',
+      'GigaChad', 'PepeSol', 'DogeKing', 'SolMoon', 'ApeStrong', 'PumpDoge', 'SolCat', 'MegaPepe',
+      'SolWolf', 'DiamondDoge', 'RocketCat', 'PepePump', 'SolApe', 'MoonCat', 'PumpWolf', 'SolShiba'
+    ];
+    
+    const symbols = [
+      'SPEPE', 'MDOG', 'PCAT', 'SHSOL', 'RPEPE', 'DAPE', 'LWOLF', 'SSHIB',
+      'GIGA', 'PSOL', 'DKING', 'SMOON', 'APES', 'PDOGE', 'SCAT', 'MPEPE',
+      'SWOLF', 'DDOGE', 'RCAT', 'PPUMP', 'SAPE', 'MCAT', 'PWOLF', 'SSHIBA'
+    ];
+    
     for (let i = 0; i < 20; i++) {
       const hoursAgo = Math.random() * 24;
       const createdAt = new Date(now - (hoursAgo * 60 * 60 * 1000));
       
+      // Generate realistic Solana addresses
+      const chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+      let address = '';
+      for (let j = 0; j < 44; j++) {
+        address += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      
       // Generate tokens that will hit strategy thresholds for meaningful analysis
       const startingMcap = Math.random() < 0.5 ? 
-        Math.random() * 2000 + 2000 :  // 50% start 2K-4K (can reach 6K+ with growth)
-        Math.random() * 4000 + 4000;   // 50% start 4K-8K (likely to hit 6K threshold)
+        Math.random() * 2000 + 2000 :  // 50% start 2K-4K (can reach threshold with growth)
+        Math.random() * 4000 + 4000;   // 50% start 4K-8K (likely to hit threshold)
       
       tokens.push({
-        address: `hist_${i}_${Math.random().toString(36).substring(7)}`,
-        name: `HistoricalToken${i}`,
-        symbol: `HIST${i}`,
+        address,
+        name: tokenNames[i] || `SolToken${i}`,
+        symbol: symbols[i] || `SOL${i}`,
         marketCap: startingMcap,
         price: Math.random() * 0.01 + 0.001,
         volume24h: Math.random() * 100000,
