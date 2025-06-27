@@ -72,71 +72,157 @@ export class TradingEngine {
 
   private async checkForNewTokens(params: StrategyConfig): Promise<void> {
     try {
-      // Use DexScreener API directly to get real token data
-      const response = await fetch('https://api.dexscreener.com/latest/dex/search?q=solana');
+      // Get boosted/trending tokens which are often newer
+      const boostResponse = await fetch('https://api.dexscreener.com/token-boosts/latest/v1');
+      let newTokensFound = 0;
       
-      if (!response.ok) {
-        console.log("DexScreener API not available");
-        return;
-      }
-
-      const data = await response.json();
-      
-      if (data?.pairs && Array.isArray(data.pairs)) {
-        let newTokensFound = 0;
+      if (boostResponse.ok) {
+        const boostData = await boostResponse.json();
         
-        for (const pair of data.pairs.slice(0, 50)) {
-          // Extract the non-SOL token from each pair
-          const token = pair.baseToken?.symbol !== 'SOL' ? pair.baseToken : pair.quoteToken;
-          
-          if (token && token.address && token.symbol !== 'SOL' && token.symbol !== 'USDC') {
-            const existingToken = await storage.getTokenByAddress(token.address);
-            
-            if (!existingToken) {
-              const marketCap = pair.fdv || pair.marketCap || 0;
-              const price = parseFloat(pair.priceUsd || "0");
-              const volume24h = pair.volume?.h24 || 0;
-              
-              // Add all discovered tokens to database
-              const newToken = await storage.createToken({
-                address: token.address,
-                name: token.name || "Unknown",
-                symbol: token.symbol,
-                marketCap,
-                price,
-                volume24h,
-                age: 3600, // Estimated age since creation date not available
-                status: marketCap >= params.watchThreshold ? "watching" : "new",
-                dexSource: pair.dexId || "raydium",
-                createdAt: new Date(),
-              });
-              
+        if (Array.isArray(boostData)) {
+          for (const boost of boostData.slice(0, 20)) {
+            if (boost.chainId === 'solana' && boost.tokenAddress) {
+              await this.processTokenFromAddress(boost.tokenAddress, params);
               newTokensFound++;
+            }
+          }
+        }
+      }
+      
+      // Also search for SOL pairs to get more current data
+      const searchResponse = await fetch('https://api.dexscreener.com/latest/dex/search?q=SOL');
+      
+      if (searchResponse.ok) {
+        const searchData = await searchResponse.json();
+        
+        if (searchData?.pairs && Array.isArray(searchData.pairs)) {
+          for (const pair of searchData.pairs.slice(0, 50)) {
+            // Only process Solana pairs
+            if (pair.chainId !== 'solana') continue;
+            
+            // Extract the non-SOL token from each pair
+            const token = pair.baseToken?.symbol !== 'SOL' ? pair.baseToken : pair.quoteToken;
+            
+            if (token && token.address && token.symbol !== 'SOL' && token.symbol !== 'USDC' && token.symbol !== 'WSOL') {
+              // Validate it's a proper Solana address (32-44 characters, no 0x prefix)
+              if (token.address.length < 32 || token.address.length > 44 || token.address.startsWith('0x')) continue;
               
-              // Create appropriate alerts based on market cap
-              if (marketCap >= params.watchThreshold) {
-                await this.createAlert({
-                  type: "success",
-                  message: `Token ${newToken.symbol} meets watch criteria: $${marketCap.toLocaleString()} MC`,
-                  tokenAddress: newToken.address,
+              const existingToken = await storage.getTokenByAddress(token.address);
+              
+              if (!existingToken) {
+                const marketCap = pair.fdv || pair.marketCap || 0;
+                const price = parseFloat(pair.priceUsd || "0");
+                const volume24h = pair.volume?.h24 || 0;
+                
+                // Calculate realistic age based on pair creation if available
+                let tokenAge = 3600; // Default 1 hour
+                if (pair.pairCreatedAt) {
+                  const createdTime = new Date(pair.pairCreatedAt).getTime();
+                  tokenAge = Math.floor((Date.now() - createdTime) / 1000);
+                  
+                  // Skip very old tokens (older than max age parameter)
+                  if (tokenAge > params.maxAge * 60) continue;
+                }
+                
+                // Filter out unrealistic market caps for new tokens
+                if (tokenAge < 3600 && marketCap > 50000000) {
+                  console.log(`Skipping ${token.symbol} - unrealistic MC ${marketCap} for age ${Math.floor(tokenAge/60)}min`);
+                  continue;
+                }
+                
+                const newToken = await storage.createToken({
+                  address: token.address,
+                  name: token.name || "Unknown",
+                  symbol: token.symbol,
+                  marketCap,
+                  price,
+                  volume24h,
+                  age: tokenAge,
+                  status: marketCap >= params.watchThreshold ? "watching" : "new",
+                  dexSource: pair.dexId || "raydium",
                 });
-              } else if (marketCap > 1000) {
-                await this.createAlert({
-                  type: "info",
-                  message: `New token found: ${newToken.symbol} - $${marketCap.toLocaleString()} MC`,
-                  tokenAddress: newToken.address,
-                });
+                
+                newTokensFound++;
+                
+                // Create appropriate alerts based on market cap
+                if (marketCap >= params.watchThreshold) {
+                  await this.createAlert({
+                    type: "success",
+                    message: `Solana token ${newToken.symbol} meets watch criteria: $${marketCap.toLocaleString()} MC (${Math.floor(tokenAge/60)}min old)`,
+                    tokenAddress: newToken.address,
+                  });
+                } else if (marketCap > 1000 && marketCap < 100000) {
+                  await this.createAlert({
+                    type: "info",
+                    message: `New Solana token: ${newToken.symbol} - $${marketCap.toLocaleString()} MC (${Math.floor(tokenAge/60)}min old)`,
+                    tokenAddress: newToken.address,
+                  });
+                }
               }
             }
           }
         }
-        
-        if (newTokensFound > 0) {
-          console.log(`Discovered ${newTokensFound} new tokens from DexScreener`);
-        }
+      }
+      
+      if (newTokensFound > 0) {
+        console.log(`Discovered ${newTokensFound} new Solana tokens from DexScreener`);
       }
     } catch (error) {
       console.error("Error checking for new tokens:", error);
+    }
+  }
+
+  private async processTokenFromAddress(tokenAddress: string, params: StrategyConfig): Promise<void> {
+    try {
+      const response = await fetch(`https://api.dexscreener.com/token-pairs/v1/solana/${tokenAddress}`);
+      
+      if (!response.ok) return;
+      
+      const pairs = await response.json();
+      
+      if (Array.isArray(pairs) && pairs.length > 0) {
+        const pair = pairs[0]; // Use the first/main pair
+        
+        const existingToken = await storage.getTokenByAddress(tokenAddress);
+        if (existingToken) return;
+        
+        const marketCap = pair.fdv || pair.marketCap || 0;
+        const price = parseFloat(pair.priceUsd || "0");
+        const volume24h = pair.volume?.h24 || 0;
+        
+        let tokenAge = 3600; // Default 1 hour
+        if (pair.pairCreatedAt) {
+          const createdTime = new Date(pair.pairCreatedAt).getTime();
+          tokenAge = Math.floor((Date.now() - createdTime) / 1000);
+          
+          // Skip very old tokens
+          if (tokenAge > params.maxAge * 60) return;
+        }
+        
+        const token = pair.baseToken?.address === tokenAddress ? pair.baseToken : pair.quoteToken;
+        
+        const newToken = await storage.createToken({
+          address: tokenAddress,
+          name: token?.name || "Unknown",
+          symbol: token?.symbol || "???",
+          marketCap,
+          price,
+          volume24h,
+          age: tokenAge,
+          status: marketCap >= params.watchThreshold ? "watching" : "new",
+          dexSource: pair.dexId || "raydium",
+        });
+        
+        if (marketCap >= params.watchThreshold) {
+          await this.createAlert({
+            type: "success",
+            message: `Boosted Solana token ${newToken.symbol} meets criteria: $${marketCap.toLocaleString()} MC`,
+            tokenAddress: newToken.address,
+          });
+        }
+      }
+    } catch (error) {
+      console.error(`Error processing token ${tokenAddress}:`, error);
     }
   }
 
