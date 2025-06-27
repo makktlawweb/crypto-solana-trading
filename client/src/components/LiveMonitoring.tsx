@@ -1,5 +1,5 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Play, Square, ExternalLink } from "lucide-react";
+import { Play, Square, ExternalLink, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,11 +7,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { formatDistanceToNow } from "date-fns";
+import { useState } from "react";
 
 export default function LiveMonitoring() {
   const { toast } = useToast();
+  const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
 
-  const { data: status } = useQuery({
+  const { data: status = {} } = useQuery({
     queryKey: ["/api/status"],
     refetchInterval: 5000,
   });
@@ -94,6 +96,24 @@ export default function LiveMonitoring() {
     return colors[colorIndex];
   };
 
+  const copyToClipboard = async (address: string) => {
+    try {
+      await navigator.clipboard.writeText(address);
+      setCopiedAddress(address);
+      toast({
+        title: "Copied!",
+        description: "Token address copied to clipboard",
+      });
+      setTimeout(() => setCopiedAddress(null), 2000);
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to copy address",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
@@ -101,14 +121,14 @@ export default function LiveMonitoring() {
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             <div className={`w-2 h-2 rounded-full ${
-              status?.monitoring ? 'bg-green-500 animate-pulse' : 'bg-gray-500'
+              (status as any)?.monitoring ? 'bg-green-500 animate-pulse' : 'bg-gray-500'
             }`} />
             <span className="text-sm text-gray-300">
-              {status?.monitoring ? 'Monitoring Active' : 'Monitoring Stopped'}
+              {(status as any)?.monitoring ? 'Monitoring Active' : 'Monitoring Stopped'}
             </span>
           </div>
           
-          {status?.monitoring ? (
+          {(status as any)?.monitoring ? (
             <Button 
               variant="destructive"
               onClick={() => stopMonitoringMutation.mutate()}
@@ -147,14 +167,14 @@ export default function LiveMonitoring() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {tokens.length === 0 ? (
+                {(tokens as any[]).length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center text-gray-400 py-8">
-                      {status?.monitoring ? 'No tokens found matching criteria' : 'Start monitoring to see tokens'}
+                      {(status as any)?.monitoring ? 'No tokens found matching criteria' : 'Start monitoring to see tokens'}
                     </TableCell>
                   </TableRow>
                 ) : (
-                  tokens.map((token: any) => (
+                  (tokens as any[]).map((token: any) => (
                     <TableRow key={token.address} className="border-gray-700 hover:bg-gray-700/50 transition-colors">
                       <TableCell>
                         <div className="flex items-center space-x-3">
@@ -163,11 +183,25 @@ export default function LiveMonitoring() {
                               {token.symbol?.substring(0, 2).toUpperCase()}
                             </span>
                           </div>
-                          <div>
+                          <div className="flex-1">
                             <p className="font-medium text-white">{token.name}</p>
-                            <p className="text-xs text-gray-400 font-mono">
-                              {token.address?.substring(0, 4)}...{token.address?.substring(token.address.length - 4)}
-                            </p>
+                            <div className="flex items-center space-x-2">
+                              <p className="text-xs text-gray-400 font-mono">
+                                {token.address?.substring(0, 4)}...{token.address?.substring(token.address.length - 4)}
+                              </p>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0 text-gray-400 hover:text-white"
+                                onClick={() => copyToClipboard(token.address)}
+                              >
+                                {copiedAddress === token.address ? (
+                                  <Check className="w-3 h-3" />
+                                ) : (
+                                  <Copy className="w-3 h-3" />
+                                )}
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       </TableCell>
