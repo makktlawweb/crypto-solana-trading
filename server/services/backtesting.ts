@@ -184,11 +184,28 @@ export class BacktestingService {
       const currentPrice = startPrice * priceMultiplier;
       const currentMarketCap = (currentPrice / startPrice) * startMarketCap;
 
+      // Generate realistic volume patterns based on token age and price action
+      let baseVolume = 5000; // Base volume for new tokens
+      
+      if (i <= 2) {
+        // First 2 minutes: high volume during initial pump
+        baseVolume = 10000 + (Math.random() * 40000);
+      } else if (i <= 5) {
+        // Minutes 2-5: volume decreases as early traders exit
+        baseVolume = 3000 + (Math.random() * 15000);
+      } else if (i <= 10) {
+        // Minutes 5-10: volume stabilizes or dies off
+        baseVolume = Math.random() < 0.3 ? 500 + (Math.random() * 2000) : 2000 + (Math.random() * 8000);
+      } else {
+        // After 10 minutes: most tokens lose volume
+        baseVolume = Math.random() < 0.7 ? 100 + (Math.random() * 900) : 1500 + (Math.random() * 5000);
+      }
+
       pricePoints.push({
         timestamp,
         price: currentPrice,
         marketCap: currentMarketCap,
-        volume: Math.random() * 50000,
+        volume: baseVolume,
         age: ageInSeconds
       });
     }
@@ -292,7 +309,10 @@ export class BacktestingService {
       if (watchHit && triggerHit && marketCapK >= buyPrice) {
         const timeSinceTrigger = (point.timestamp.getTime() - triggerTime!.getTime()) / (1000 * 60);
         
-        if (timeSinceTrigger <= 5) {
+        // Volume viability check - ensure token is still tradeable
+        const volumeViable = this.checkVolumeViability(token, point);
+        
+        if (timeSinceTrigger <= 5 && volumeViable) {
           return {
             watchTime: watchTime!,
             triggerTime: triggerTime!,
@@ -305,6 +325,25 @@ export class BacktestingService {
     }
     
     return null;
+  }
+
+  private checkVolumeViability(token: HistoricalTokenData, currentPoint: any): boolean {
+    const ageInMinutes = (currentPoint.timestamp.getTime() - token.createdAt.getTime()) / (1000 * 60);
+    
+    // Volume viability thresholds based on token age
+    if (ageInMinutes <= 5) {
+      // First 5 minutes: Need at least $1K volume to be tradeable
+      return currentPoint.volume >= 1000;
+    } else if (ageInMinutes <= 15) {
+      // 5-15 minutes: Need at least $2K volume (sustainability test)
+      return currentPoint.volume >= 2000;
+    } else if (ageInMinutes <= 30) {
+      // 15-30 minutes: Need at least $1.5K volume (established activity)
+      return currentPoint.volume >= 1500;
+    } else {
+      // After 30 minutes: Need at least $1K volume (minimum liquidity)
+      return currentPoint.volume >= 1000;
+    }
   }
 
   private createTradeFromOpportunity(
@@ -327,6 +366,15 @@ export class BacktestingService {
     const remainingHistory = token.priceHistory.slice(buyTimeIndex + 1);
     
     for (const point of remainingHistory) {
+      // Check volume viability first - exit if volume dies
+      const volumeViable = this.checkVolumeViability(token, point);
+      if (!volumeViable) {
+        exitPrice = point.price;
+        exitTime = point.timestamp;
+        exitReason = 'volume_death';
+        break;
+      }
+      
       if (point.price >= takeProfitPrice) {
         exitPrice = takeProfitPrice;
         exitTime = point.timestamp;

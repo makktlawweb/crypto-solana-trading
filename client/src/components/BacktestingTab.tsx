@@ -65,6 +65,8 @@ export default function BacktestingTab() {
         return <Badge className="bg-green-500/20 text-green-400">Take Profit</Badge>;
       case "stop_loss":
         return <Badge className="bg-red-500/20 text-red-400">Stop Loss</Badge>;
+      case "volume_death":
+        return <Badge className="bg-orange-500/20 text-orange-400">Volume Death</Badge>;
       case "timeout":
         return <Badge className="bg-yellow-500/20 text-yellow-400">Timeout</Badge>;
       default:
