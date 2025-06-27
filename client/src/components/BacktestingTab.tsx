@@ -12,7 +12,7 @@ import PerformanceChart from "./PerformanceChart";
 
 export default function BacktestingTab() {
   const { toast } = useToast();
-  const [timeframe, setTimeframe] = useState("1w");
+  const [timeframe, setTimeframe] = useState("1d");
   const [backtestResults, setBacktestResults] = useState<any>(null);
 
   const runBacktestMutation = useMutation({
