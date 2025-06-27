@@ -109,6 +109,11 @@ export class TradingEngine {
               
               const existingToken = await storage.getTokenByAddress(token.address);
               
+              if (existingToken) {
+                console.log(`Skipping ${token.symbol} - already exists in database`);
+                continue;
+              }
+              
               if (!existingToken) {
                 const marketCap = pair.fdv || pair.marketCap || 0;
                 const price = parseFloat(pair.priceUsd || "0");
@@ -121,14 +126,19 @@ export class TradingEngine {
                   tokenAge = Math.floor((Date.now() - createdTime) / 1000);
                   
                   // Skip very old tokens (older than max age parameter)
-                  if (tokenAge > params.maxAge * 60) continue;
+                  if (tokenAge > params.maxAge * 60) {
+                    console.log(`Skipping ${token.symbol} - too old: ${Math.floor(tokenAge/60)}min (max: ${params.maxAge}min)`);
+                    continue;
+                  }
                 }
                 
-                // Filter out unrealistic market caps for new tokens
-                if (tokenAge < 3600 && marketCap > 50000000) {
+                // Filter out unrealistic market caps for new tokens (relaxed for testing)
+                if (tokenAge < 3600 && marketCap > 500000000) {
                   console.log(`Skipping ${token.symbol} - unrealistic MC ${marketCap} for age ${Math.floor(tokenAge/60)}min`);
                   continue;
                 }
+                
+                console.log(`Processing token: ${token.symbol} - MC: $${marketCap}, Age: ${Math.floor(tokenAge/60)}min`);
                 
                 const newToken = await storage.createToken({
                   address: token.address,
