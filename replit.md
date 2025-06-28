@@ -102,6 +102,7 @@ This is a full-stack Solana trading bot application built with React, TypeScript
 - June 27, 2025. Implemented volume-based viability filters to identify tokens that remain tradeable over time, preventing trades in dead tokens and adding "volume_death" exit condition
 - June 28, 2025. Enhanced backtesting with market cap tracking - added entry/exit market cap columns and 1-hour post-TGE analysis to identify tokens with significant growth potential beyond initial trading window
 - June 28, 2025. Successfully tested 15K/10K/12K strategy achieving 85% watch hit rate and 58.8% opportunity rate with realistic Solana token behavior analysis
+- June 28, 2025. Identified critical market insight: Most tokens are duds that drop to 4K baseline quickly - finding tokens that survive above 6K for even 5 minutes is rare, exposing optimal investment timing windows
 
 ## User Preferences
 
