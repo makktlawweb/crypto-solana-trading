@@ -1,6 +1,7 @@
 import { storage } from "../storage";
 import { dexApiService } from "./dexApi";
 import { historicalDataService, type HistoricalTokenData } from "./historicalData";
+import { walletAnalysisService, type WalletAnalysis } from "./walletAnalysis";
 import type { StrategyConfig, InsertTrade, InsertBacktestResult, BacktestResult } from "@shared/schema";
 import { nanoid } from "nanoid";
 
@@ -388,6 +389,11 @@ export class BacktestingService {
     );
     const oneHourPostTGEMarketCap = oneHourPoint ? oneHourPoint.marketCap : undefined;
     
+    let highestPrice = entryPrice;
+    let trailingStopPrice = stopLossPrice;
+    let currentMarketCap = entryMarketCap;
+    let momentumPhase = 'initial'; // initial, breakout, explosive
+    
     for (const point of remainingHistory) {
       // Check volume viability first - exit if volume dies
       const volumeViable = this.checkVolumeViability(token, point);
@@ -398,15 +404,51 @@ export class BacktestingService {
         break;
       }
       
-      if (point.price >= takeProfitPrice) {
-        exitPrice = takeProfitPrice;
+      // Update highest price and market cap tracking
+      if (point.price > highestPrice) {
+        highestPrice = point.price;
+        currentMarketCap = point.marketCap;
+        
+        // Dynamic momentum phase detection
+        if (currentMarketCap > 100000 && momentumPhase === 'initial') {
+          momentumPhase = 'breakout';
+          // Widen stop loss for breakout phase
+          trailingStopPrice = highestPrice * (1 - (strategy.stopLossPercent * 0.5) / 100);
+        } else if (currentMarketCap > 500000 && momentumPhase === 'breakout') {
+          momentumPhase = 'explosive';
+          // Even wider stop for explosive phase
+          trailingStopPrice = highestPrice * (1 - (strategy.stopLossPercent * 0.3) / 100);
+        } else {
+          // Standard trailing stop - tighten as we go higher
+          const trailingPercent = momentumPhase === 'explosive' ? 
+            strategy.stopLossPercent * 0.3 : 
+            momentumPhase === 'breakout' ? 
+            strategy.stopLossPercent * 0.5 : 
+            strategy.stopLossPercent;
+          trailingStopPrice = highestPrice * (1 - trailingPercent / 100);
+        }
+      }
+      
+      // Dynamic take profit based on momentum phase
+      let dynamicTakeProfitPrice = takeProfitPrice;
+      if (momentumPhase === 'explosive') {
+        // Let explosive moves run much longer
+        dynamicTakeProfitPrice = entryPrice * strategy.takeProfitMultiplier * 3;
+      } else if (momentumPhase === 'breakout') {
+        // Moderate extension for breakout phase
+        dynamicTakeProfitPrice = entryPrice * strategy.takeProfitMultiplier * 1.5;
+      }
+      
+      // Exit conditions with dynamic targets
+      if (point.price >= dynamicTakeProfitPrice) {
+        exitPrice = dynamicTakeProfitPrice;
         exitTime = point.timestamp;
         exitReason = 'take_profit';
         break;
-      } else if (point.price <= stopLossPrice) {
-        exitPrice = stopLossPrice;
+      } else if (point.price <= trailingStopPrice) {
+        exitPrice = trailingStopPrice;
         exitTime = point.timestamp;
-        exitReason = 'stop_loss';
+        exitReason = 'trailing_stop';
         break;
       }
     }

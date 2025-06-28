@@ -29,6 +29,12 @@ export const tokens = pgTable("tokens", {
   age: integer("age").notNull(), // Age in seconds
   status: text("status").notNull().default("new"), // new, watching, buy_trigger, bought, sold
   dexSource: text("dex_source").notNull(),
+  // Wallet concentration analysis (Padre/Axion style)
+  topHoldersPercent: real("top_holders_percent"), // % held by top 10 wallets
+  bundlerPercent: real("bundler_percent"), // % held by known bundlers
+  uniqueHolders: integer("unique_holders"), // Total number of holders
+  holderConcentrationRisk: text("holder_concentration_risk"), // low, medium, high, critical
+  suspiciousWallets: jsonb("suspicious_wallets"), // Array of flagged wallet addresses
   createdAt: timestamp("created_at").defaultNow(),
   lastUpdated: timestamp("last_updated").defaultNow(),
 });
