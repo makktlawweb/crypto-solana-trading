@@ -188,8 +188,9 @@ export default function BacktestingTab() {
                     <TableRow className="border-gray-600">
                       <TableHead className="text-gray-400">Date</TableHead>
                       <TableHead className="text-gray-400">Token</TableHead>
-                      <TableHead className="text-gray-400">Entry Price</TableHead>
-                      <TableHead className="text-gray-400">Exit Price</TableHead>
+                      <TableHead className="text-gray-400">Entry MC</TableHead>
+                      <TableHead className="text-gray-400">Exit MC</TableHead>
+                      <TableHead className="text-gray-400">1hr Post-TGE MC</TableHead>
                       <TableHead className="text-gray-400">Duration</TableHead>
                       <TableHead className="text-gray-400">P&L</TableHead>
                       <TableHead className="text-gray-400">Exit Reason</TableHead>
@@ -219,10 +220,16 @@ export default function BacktestingTab() {
                           </div>
                         </TableCell>
                         <TableCell className="font-mono text-sm text-gray-300">
-                          ${trade.entryPrice.toFixed(6)}
+                          ${trade.entryMarketCap ? (trade.entryMarketCap / 1000).toFixed(1) + 'K' : 'N/A'}
                         </TableCell>
                         <TableCell className="font-mono text-sm text-gray-300">
-                          ${trade.exitPrice.toFixed(6)}
+                          ${trade.exitMarketCap ? (trade.exitMarketCap / 1000).toFixed(1) + 'K' : 'N/A'}
+                        </TableCell>
+                        <TableCell className="font-mono text-sm text-gray-300">
+                          {trade.oneHourPostTGEMarketCap ? 
+                            '$' + (trade.oneHourPostTGEMarketCap / 1000).toFixed(1) + 'K' : 
+                            <span className="text-gray-500">Pending</span>
+                          }
                         </TableCell>
                         <TableCell className="font-mono text-sm text-gray-300">
                           {formatDuration(trade.duration)}
