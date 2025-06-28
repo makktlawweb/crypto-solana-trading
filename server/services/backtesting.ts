@@ -289,36 +289,45 @@ export class BacktestingService {
   private findTradingOpportunity(token: HistoricalTokenData, strategy: StrategyConfig) {
     const { watchThreshold, buyTrigger, buyPrice } = strategy;
     
-    let watchHit = false;
-    let triggerHit = false;
-    let watchTime: Date | null = null;
-    let triggerTime: Date | null = null;
+    // Find first time token hits watch threshold
+    const watchPoints = token.priceHistory.filter(point => 
+      point.marketCap / 1000 >= watchThreshold &&
+      this.checkVolumeViability(token, point)
+    );
     
-    for (const point of token.priceHistory) {
-      const marketCapK = point.marketCap / 1000;
+    if (watchPoints.length === 0) return null;
+    
+    const firstWatchTime = watchPoints[0].timestamp;
+    
+    // Check if token sustained above watch threshold for at least 3 minutes
+    const threeMinutesLater = new Date(firstWatchTime.getTime() + 3 * 60 * 1000);
+    const fiveMinutesLater = new Date(firstWatchTime.getTime() + 5 * 60 * 1000);
+    
+    // Find points between 3-5 minutes after first watch hit
+    const sustainedPoints = token.priceHistory.filter(point => 
+      point.timestamp >= threeMinutesLater && 
+      point.timestamp <= fiveMinutesLater &&
+      point.marketCap / 1000 >= watchThreshold &&
+      this.checkVolumeViability(token, point)
+    );
+    
+    // If no sustained points, token didn't maintain momentum
+    if (sustainedPoints.length === 0) return null;
+    
+    // Look for buy trigger after sustained period
+    for (const sustainedPoint of sustainedPoints) {
+      const laterPoints = token.priceHistory.filter(p => 
+        p.timestamp > sustainedPoint.timestamp &&
+        p.timestamp.getTime() - sustainedPoint.timestamp.getTime() <= 2 * 60 * 1000 // Within 2 minutes
+      );
       
-      if (!watchHit && marketCapK >= watchThreshold) {
-        watchHit = true;
-        watchTime = point.timestamp;
-        continue;
-      }
-      
-      if (watchHit && !triggerHit && marketCapK <= buyTrigger) {
-        triggerHit = true;
-        triggerTime = point.timestamp;
-        continue;
-      }
-      
-      if (watchHit && triggerHit && marketCapK >= buyPrice) {
-        const timeSinceTrigger = (point.timestamp.getTime() - triggerTime!.getTime()) / (1000 * 60);
+      for (const point of laterPoints) {
+        const marketCapK = point.marketCap / 1000;
         
-        // Volume viability check - ensure token is still tradeable
-        const volumeViable = this.checkVolumeViability(token, point);
-        
-        if (timeSinceTrigger <= 5 && volumeViable) {
+        if (marketCapK >= buyTrigger && marketCapK <= buyPrice * 1.1 && this.checkVolumeViability(token, point)) {
           return {
-            watchTime: watchTime!,
-            triggerTime: triggerTime!,
+            watchTime: firstWatchTime,
+            triggerTime: sustainedPoint.timestamp,
             buyTime: point.timestamp,
             buyPrice: point.price,
             buyMarketCap: point.marketCap
