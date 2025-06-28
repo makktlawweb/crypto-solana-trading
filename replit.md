@@ -105,6 +105,8 @@ This is a full-stack Solana trading bot application built with React, TypeScript
 - June 28, 2025. Identified critical market insight: Most tokens are duds that drop to 4K baseline quickly - finding tokens that survive above 6K for even 5 minutes is rare, exposing optimal investment timing windows
 - June 28, 2025. Comprehensive strategy testing revealed optimal parameters: 10K survival threshold shows 20% win rate with 95% watch hit rate, proving sustained market cap above baseline is predictive of momentum
 - June 28, 2025. Discovered volume death detection prevents 30-88% losses by identifying tokens that lose trading viability, with successful examples showing consistent pattern recognition
+- June 28, 2025. Identified speed challenge: automated execution required for 5.5K entry points as human reaction time cannot compete with millisecond bot trading speeds
+- June 28, 2025. System successfully monitoring 18+ live Solana tokens, proving real-time discovery works - next phase focuses on safe automated entry strategies
 
 ## User Preferences
 
