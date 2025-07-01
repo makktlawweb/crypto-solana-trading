@@ -6,6 +6,8 @@ import { backtestingService } from "./services/backtesting";
 import { solanaService } from "./services/solana";
 import { dexApiService } from "./services/dexApi";
 import { momentumDetectionService } from "./services/momentumDetection";
+import { conversionAnalysisService } from "./services/conversionAnalysis";
+import { exitStrategyService } from "./services/exitStrategy";
 import { insertTradingParametersSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -245,6 +247,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error getting momentum signals:", error);
       res.status(500).json({ error: "Failed to get momentum signals" });
+    }
+  });
+
+  // Analyze conversion rates for specific entry points
+  app.get("/api/analysis/conversion/:entryPoint", async (req, res) => {
+    try {
+      const entryPoint = parseFloat(req.params.entryPoint);
+      if (isNaN(entryPoint) || entryPoint <= 0) {
+        return res.status(400).json({ error: "Invalid entry point" });
+      }
+      
+      const analysis = await conversionAnalysisService.analyzeConversionRates(entryPoint);
+      res.json(analysis);
+    } catch (error) {
+      console.error("Error analyzing conversion rates:", error);
+      res.status(500).json({ error: "Failed to analyze conversion rates" });
+    }
+  });
+
+  // Find optimal entry point
+  app.get("/api/analysis/optimal-entry", async (req, res) => {
+    try {
+      const optimal = await conversionAnalysisService.findOptimalEntryPoint();
+      res.json(optimal);
+    } catch (error) {
+      console.error("Error finding optimal entry:", error);
+      res.status(500).json({ error: "Failed to find optimal entry point" });
+    }
+  });
+
+  // Analyze wallet following stats
+  app.post("/api/analysis/wallet-following", async (req, res) => {
+    try {
+      const { walletAddresses } = req.body;
+      if (!Array.isArray(walletAddresses) || walletAddresses.length === 0) {
+        return res.status(400).json({ error: "Invalid wallet addresses array" });
+      }
+      
+      const stats = await conversionAnalysisService.analyzeWalletFollowing(walletAddresses);
+      res.json(stats);
+    } catch (error) {
+      console.error("Error analyzing wallet following:", error);
+      res.status(500).json({ error: "Failed to analyze wallet following" });
+    }
+  });
+
+  // Get optimal exit timing analysis
+  app.get("/api/exit/timing/:entryPoint", async (req, res) => {
+    try {
+      const entryPoint = parseFloat(req.params.entryPoint);
+      if (isNaN(entryPoint) || entryPoint <= 0) {
+        return res.status(400).json({ error: "Invalid entry point" });
+      }
+      
+      const timing = await exitStrategyService.analyzeOptimalExitTiming(entryPoint);
+      res.json(timing);
+    } catch (error) {
+      console.error("Error analyzing exit timing:", error);
+      res.status(500).json({ error: "Failed to analyze exit timing" });
+    }
+  });
+
+  // Get Padre/Axiom integration settings
+  app.get("/api/exit/padre-axiom-settings", async (req, res) => {
+    try {
+      const settings = await exitStrategyService.analyzePadreAxiomIntegration();
+      res.json(settings);
+    } catch (error) {
+      console.error("Error getting Padre/Axiom settings:", error);
+      res.status(500).json({ error: "Failed to get trading bot settings" });
+    }
+  });
+
+  // Simulate exit patterns
+  app.get("/api/exit/patterns/:entryPoint", async (req, res) => {
+    try {
+      const entryPoint = parseFloat(req.params.entryPoint);
+      const sampleSize = parseInt(req.query.samples as string) || 50;
+      
+      if (isNaN(entryPoint) || entryPoint <= 0) {
+        return res.status(400).json({ error: "Invalid entry point" });
+      }
+      
+      const patterns = await exitStrategyService.simulateExitPatterns(entryPoint, sampleSize);
+      res.json(patterns);
+    } catch (error) {
+      console.error("Error simulating exit patterns:", error);
+      res.status(500).json({ error: "Failed to simulate exit patterns" });
     }
   });
 
