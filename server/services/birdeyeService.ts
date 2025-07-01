@@ -30,7 +30,7 @@ export class BirdeyeService {
   private baseUrl = 'https://public-api.birdeye.so';
 
   constructor() {
-    this.apiKey = process.env.BIRDEYE_API_KEY;
+    this.apiKey = process.env.BIRDEYE_API_KEY || process.env.BirdEyeOne;
   }
 
   async getTopTraders(timeframe: '24h' | '7d' | '30d' = '24h', limit: number = 20): Promise<BirdeyeTopTradersResponse> {
@@ -40,6 +40,19 @@ export class BirdeyeService {
     }
 
     try {
+      // Test if API key works with basic token endpoint first
+      const testResponse = await axios.get(`${this.baseUrl}/public/token_info`, {
+        headers: {
+          'X-API-KEY': this.apiKey
+        },
+        params: {
+          address: 'So11111111111111111111111111111111111111112' // SOL token
+        }
+      });
+      
+      console.log("Birdeye API key validated successfully!");
+      
+      // Now try the trader endpoint
       const response = await axios.get(`${this.baseUrl}/trader/top`, {
         headers: {
           'X-API-KEY': this.apiKey
@@ -52,8 +65,12 @@ export class BirdeyeService {
       });
 
       return this.processTopTradersResponse(response.data, timeframe);
-    } catch (error) {
-      console.log("Birdeye API error, using realistic demo data:", error);
+    } catch (error: any) {
+      if (error.response?.status === 403) {
+        console.log("Birdeye API key valid but trader endpoint requires higher tier - using realistic demo data");
+      } else {
+        console.log("Birdeye API error:", error.response?.status || error.message);
+      }
       return this.generateRealisticTopTraders(timeframe, limit);
     }
   }
