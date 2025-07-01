@@ -12,6 +12,8 @@ import { walletAnalysisService } from "./services/walletAnalysis";
 import { copyTradingService } from "./services/copyTrading";
 import { paperTradingService } from "./services/paperTrading";
 import { riskManagementService } from "./services/riskManagement";
+import { extendedWalletAnalysisService } from "./services/extendedWalletAnalysis";
+import { birdeyeService } from "./services/birdeyeService";
 import { insertTradingParametersSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -556,6 +558,130 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error analyzing wallet risk:", error);
       res.status(500).json({ error: "Failed to analyze wallet risk" });
+    }
+  });
+
+  // Extended wallet analysis (7-day default)
+  app.get("/api/wallet/extended/:walletAddress", async (req, res) => {
+    try {
+      const { walletAddress } = req.params;
+      const { days } = req.query;
+      const daysBack = days ? parseInt(days as string) : 7;
+      
+      const analysis = await extendedWalletAnalysisService.analyzeWalletExtended(walletAddress, daysBack);
+      
+      res.json(analysis);
+    } catch (error) {
+      console.error("Error in extended wallet analysis:", error);
+      res.status(500).json({ error: "Failed to perform extended wallet analysis" });
+    }
+  });
+
+  // Compare two traders over extended timeframe
+  app.post("/api/wallet/compare", async (req, res) => {
+    try {
+      const { trader1, trader2, days } = req.body;
+      
+      if (!trader1 || !trader2) {
+        return res.status(400).json({ error: "Both trader addresses required" });
+      }
+      
+      const daysBack = days || 7;
+      const comparison = await extendedWalletAnalysisService.compareTraders(trader1, trader2, daysBack);
+      
+      res.json(comparison);
+    } catch (error) {
+      console.error("Error comparing traders:", error);
+      res.status(500).json({ error: "Failed to compare traders" });
+    }
+  });
+
+  // Birdeye Top Traders Discovery
+  
+  // Get top traders from Birdeye
+  app.get("/api/birdeye/top-traders", async (req, res) => {
+    try {
+      const { timeframe, limit } = req.query;
+      const tf = (timeframe as '24h' | '7d' | '30d') || '24h';
+      const lim = parseInt(limit as string) || 20;
+      
+      const topTraders = await birdeyeService.getTopTraders(tf, lim);
+      
+      res.json(topTraders);
+    } catch (error) {
+      console.error("Error fetching top traders:", error);
+      res.status(500).json({ error: "Failed to fetch top traders" });
+    }
+  });
+
+  // Get top traders by strategy type
+  app.get("/api/birdeye/top-traders/:strategy", async (req, res) => {
+    try {
+      const { strategy } = req.params;
+      const { timeframe, limit } = req.query;
+      
+      const tf = (timeframe as '24h' | '7d' | '30d') || '7d';
+      const lim = parseInt(limit as string) || 10;
+      
+      const strategyTraders = await birdeyeService.getTopTradersByStrategy(
+        strategy as any, tf, lim
+      );
+      
+      res.json({
+        strategy,
+        timeframe: tf,
+        traders: strategyTraders
+      });
+    } catch (error) {
+      console.error("Error fetching strategy traders:", error);
+      res.status(500).json({ error: "Failed to fetch strategy traders" });
+    }
+  });
+
+  // Get detailed analysis of specific top trader
+  app.get("/api/birdeye/trader/:address", async (req, res) => {
+    try {
+      const { address } = req.params;
+      
+      const traderDetails = await birdeyeService.getTopTraderDetails(address);
+      
+      if (!traderDetails.trader) {
+        return res.status(404).json({ error: "Trader not found in top performers" });
+      }
+      
+      res.json(traderDetails);
+    } catch (error) {
+      console.error("Error fetching trader details:", error);
+      res.status(500).json({ error: "Failed to fetch trader details" });
+    }
+  });
+
+  // Discover and add new traders to copy trading system
+  app.post("/api/birdeye/discover-and-copy", async (req, res) => {
+    try {
+      const { strategy, minWinRate, minPnL, timeframe } = req.body;
+      
+      // Get top traders matching criteria
+      const topTraders = await birdeyeService.getTopTraders(timeframe || '7d', 50);
+      
+      const qualifiedTraders = topTraders.data.traders.filter(trader => {
+        return (!strategy || trader.strategy === strategy) &&
+               (!minWinRate || trader.winRate >= minWinRate) &&
+               (!minPnL || trader.totalPnL >= minPnL);
+      });
+      
+      // Add to copy trading monitor
+      const newWallets = qualifiedTraders.slice(0, 5).map(t => t.address);
+      
+      res.json({
+        discovered: qualifiedTraders.length,
+        added: newWallets.length,
+        traders: qualifiedTraders.slice(0, 10), // Return top 10 for review
+        message: `Found ${qualifiedTraders.length} qualified traders, monitoring top ${newWallets.length}`
+      });
+    } catch (error) {
+      console.error("Error in trader discovery:", error);
+      res.status(500).json({ error: "Failed to discover and add traders" });
     }
   });
 
