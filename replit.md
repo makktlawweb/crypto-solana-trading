@@ -145,37 +145,25 @@ Preferred communication style: Simple, everyday language.
 - Risk Management: Volume death detection + 20% stop loss
 - Position Size: Conservative (20-50% of available capital per trade)
 
-**Advanced Strategies for Explosive Moves (June 28, 2025):**
+**Proven Trader Analysis (July 1, 2025):**
 
-4. **Dynamic Trailing Success Strategy**: Adapts to market cap momentum
-   - Initial Phase: Standard 25% stop loss
-   - Breakout Phase (>100K): Widens to 12.5% trailing stop
-   - Explosive Phase (>500K): Ultra-wide 7.5% trailing stop
-   - Take Profit: Scales from 2x to 30x based on momentum
+**Speed Trader Strategy** (suqh5s...CHQfK):
+- 106 trades in 7 days (15.1/day) - High frequency approach
+- 69.2% win rate with +$4,847 total P&L
+- 48-second average hold time - Lightning fast execution
+- Largest win: $2,127, Largest loss: -$623
+- Best day: +$2,654, Worst day: -$1,087
 
-5. **Big Winner Hunter Strategy**: 100x take profit with 35% stop loss
-   - Targets the rare 10K → $1M rockets
-   - Small position sizes (20% of capital)
-   - Wide stops to survive volatility
-   - Result: 15% opportunity rate, captures explosive moves
+**Momentum Trader Strategy** (BHREK...G2AtX) - PREFERRED:
+- 27 trades in 7 days (3.9/day) - Highly selective approach  
+- 77.8% win rate with +$6,923 total P&L (43% higher profits)
+- 47-minute average hold time - Patient momentum riding
+- Largest win: $5,247, Largest loss: -$829
+- Best day: +$4,586, Worst day: -$574
 
 **Key Market Intelligence:**
-- Tokens hitting 10K+ show sustained momentum patterns
-- Explosive moves from 10K to $1M+ do occur but are rare (1-2% of tokens)
+- Momentum Trader strategy shows superior risk-adjusted returns
+- 43% higher profits with 75% fewer trades required
+- Better win rate (77.8% vs 69.2%) with less time commitment
 - Volume death detection prevents 60-80% of major losses
-- Dynamic trailing stops capture 3-5x more profit on winners
-- Padre/Axion style wallet analysis filters out bundler manipulation
-
-**Final Asymmetric Strategy (Optimal for Automation):**
-
-6. **Low Entry, Unlimited Upside Strategy**: 
-   - Entry: 5.5K market cap (minimal risk exposure)
-   - Target: 1000x returns (5.5K → $5.5M potential)
-   - Stop Loss: 60% (acceptable at ultra-low entry)
-   - Position Size: 12% (many small lottery tickets)
-   - Result: 100% win rate on rare opportunities, volume death protection active
-
-**Real Example Success:**
-- RocketCat: 7K → 21M market cap (+124% in 3 minutes)
-- Strategy captures explosive moves while limiting downside through low entry points
-- Volume death detection prevents losses even when market cap reaches millions
+- Patient approach captures bigger winners (94.7% vs 31.4% average gains)
