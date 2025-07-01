@@ -10,6 +10,8 @@ import { conversionAnalysisService } from "./services/conversionAnalysis";
 import { exitStrategyService } from "./services/exitStrategy";
 import { walletAnalysisService } from "./services/walletAnalysis";
 import { copyTradingService } from "./services/copyTrading";
+import { paperTradingService } from "./services/paperTrading";
+import { riskManagementService } from "./services/riskManagement";
 import { insertTradingParametersSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -443,6 +445,117 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error getting copy trading status:", error);
       res.status(500).json({ error: "Failed to get copy trading status" });
+    }
+  });
+
+  // Paper Trading Endpoints
+  
+  // Start paper trading for a specific wallet
+  app.post("/api/paper-trading/start", async (req, res) => {
+    try {
+      const { walletAddress } = req.body;
+      
+      if (!walletAddress) {
+        return res.status(400).json({ error: "Wallet address required" });
+      }
+      
+      await paperTradingService.startPaperTrading(walletAddress);
+      
+      res.json({ 
+        status: "started",
+        message: `Paper trading started for wallet: ${walletAddress}`,
+        startingBalance: paperTradingService.getCurrentBalance()
+      });
+    } catch (error) {
+      console.error("Error starting paper trading:", error);
+      res.status(500).json({ error: "Failed to start paper trading" });
+    }
+  });
+
+  // Stop paper trading
+  app.post("/api/paper-trading/stop", async (req, res) => {
+    try {
+      await paperTradingService.stopPaperTrading();
+      
+      const finalStats = paperTradingService.calculateStats();
+      
+      res.json({ 
+        status: "stopped",
+        message: "Paper trading session ended",
+        finalStats: finalStats
+      });
+    } catch (error) {
+      console.error("Error stopping paper trading:", error);
+      res.status(500).json({ error: "Failed to stop paper trading" });
+    }
+  });
+
+  // Get paper trading status and current positions
+  app.get("/api/paper-trading/status", async (req, res) => {
+    try {
+      const status = {
+        isActive: paperTradingService.getIsActive(),
+        currentBalance: paperTradingService.getCurrentBalance(),
+        portfolioValue: paperTradingService.getPortfolioValue(),
+        openPositions: paperTradingService.getOpenPositions(),
+        stats: paperTradingService.calculateStats()
+      };
+      
+      res.json(status);
+    } catch (error) {
+      console.error("Error getting paper trading status:", error);
+      res.status(500).json({ error: "Failed to get paper trading status" });
+    }
+  });
+
+  // Get all paper trading positions (open and closed)
+  app.get("/api/paper-trading/positions", async (req, res) => {
+    try {
+      const { status } = req.query;
+      
+      let positions;
+      if (status === 'open') {
+        positions = paperTradingService.getOpenPositions();
+      } else if (status === 'closed') {
+        positions = paperTradingService.getClosedPositions();
+      } else {
+        positions = paperTradingService.getAllPositions();
+      }
+      
+      res.json(positions);
+    } catch (error) {
+      console.error("Error getting paper trading positions:", error);
+      res.status(500).json({ error: "Failed to get paper trading positions" });
+    }
+  });
+
+  // Get paper trading performance stats
+  app.get("/api/paper-trading/stats", async (req, res) => {
+    try {
+      const stats = paperTradingService.calculateStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error getting paper trading stats:", error);
+      res.status(500).json({ error: "Failed to get paper trading stats" });
+    }
+  });
+
+  // Analyze wallet risk profile
+  app.get("/api/risk-analysis/:walletAddress", async (req, res) => {
+    try {
+      const { walletAddress } = req.params;
+      
+      const riskProfile = await riskManagementService.analyzeWalletRiskProfile(walletAddress);
+      const portfolioRisk = await riskManagementService.calculatePortfolioRisk(riskProfile);
+      
+      res.json({
+        walletAddress,
+        riskProfile,
+        portfolioRisk
+      });
+    } catch (error) {
+      console.error("Error analyzing wallet risk:", error);
+      res.status(500).json({ error: "Failed to analyze wallet risk" });
     }
   });
 
