@@ -14,6 +14,7 @@ import { paperTradingService } from "./services/paperTrading";
 import { riskManagementService } from "./services/riskManagement";
 import { extendedWalletAnalysisService } from "./services/extendedWalletAnalysis";
 import { birdeyeService } from "./services/birdeyeService";
+import { technicalAnalysisService } from "./services/technicalAnalysis";
 import { insertTradingParametersSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -682,6 +683,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error in trader discovery:", error);
       res.status(500).json({ error: "Failed to discover and add traders" });
+    }
+  });
+
+  // Technical Analysis Endpoints
+  
+  // Analyze trader's technical patterns and decision-making
+  app.get("/api/technical/analyze/:wallet", async (req, res) => {
+    try {
+      const { wallet } = req.params;
+      const { days } = req.query;
+      
+      const daysBack = parseInt(days as string) || 30;
+      const analysis = await technicalAnalysisService.analyzeTraderPatterns(wallet, daysBack);
+      
+      res.json({
+        wallet,
+        timeframe: `${daysBack} days`,
+        analysis,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Error in technical analysis:", error);
+      res.status(500).json({ error: "Failed to analyze trader patterns" });
+    }
+  });
+
+  // Compare technical patterns between two traders
+  app.post("/api/technical/compare", async (req, res) => {
+    try {
+      const { trader1, trader2, days } = req.body;
+      
+      if (!trader1 || !trader2) {
+        return res.status(400).json({ error: "Both trader addresses required" });
+      }
+      
+      const daysBack = days || 30;
+      
+      const [analysis1, analysis2] = await Promise.all([
+        technicalAnalysisService.analyzeTraderPatterns(trader1, daysBack),
+        technicalAnalysisService.analyzeTraderPatterns(trader2, daysBack)
+      ]);
+      
+      // Generate comparison insights
+      const comparison = {
+        trader1: { wallet: trader1, analysis: analysis1 },
+        trader2: { wallet: trader2, analysis: analysis2 },
+        insights: {
+          volumeStrategy: {
+            trader1Avg: analysis1.avgVolumeAtEntry,
+            trader2Avg: analysis2.avgVolumeAtEntry,
+            advantage: analysis1.avgVolumeAtEntry > analysis2.avgVolumeAtEntry ? 'trader1' : 'trader2'
+          },
+          rsiStrategy: {
+            trader1Entry: analysis1.avgRSIAtEntry,
+            trader2Entry: analysis2.avgRSIAtEntry,
+            trader1Exit: analysis1.avgRSIAtExit,
+            trader2Exit: analysis2.avgRSIAtExit
+          },
+          timingStrategy: {
+            trader1Hours: analysis1.mostActiveHours,
+            trader2Hours: analysis2.mostActiveHours,
+            trader1AvgHold: analysis1.preferredHoldTimes.avg,
+            trader2AvgHold: analysis2.preferredHoldTimes.avg
+          },
+          entryReasons: {
+            trader1Top: analysis1.topEntryReasons.slice(0, 3),
+            trader2Top: analysis2.topEntryReasons.slice(0, 3)
+          },
+          bestSetups: {
+            trader1: analysis1.highProbabilitySetups.slice(0, 3),
+            trader2: analysis2.highProbabilitySetups.slice(0, 3)
+          }
+        }
+      };
+      
+      res.json(comparison);
+    } catch (error) {
+      console.error("Error comparing technical patterns:", error);
+      res.status(500).json({ error: "Failed to compare technical patterns" });
     }
   });
 
