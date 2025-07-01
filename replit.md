@@ -119,6 +119,14 @@ This is a full-stack Solana trading bot application built with React, TypeScript
 
 Preferred communication style: Simple, everyday language.
 
+## Commercial Vision
+
+**Retail Copy Trading Platform:**
+- User validated system performance and commercial potential
+- Plans to scale to retail market with small percentage fee model on copy trades
+- Focus on learning and replicating successful trader patterns for broader market access
+- Target: Making professional trading strategies accessible to everyday investors
+
 ## Strategy Testing Summary
 
 **Key Strategy Results (June 28, 2025):**
