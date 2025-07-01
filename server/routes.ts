@@ -9,6 +9,7 @@ import { momentumDetectionService } from "./services/momentumDetection";
 import { conversionAnalysisService } from "./services/conversionAnalysis";
 import { exitStrategyService } from "./services/exitStrategy";
 import { walletAnalysisService } from "./services/walletAnalysis";
+import { copyTradingService } from "./services/copyTrading";
 import { insertTradingParametersSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -400,6 +401,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error backtesting wallet strategy:", error);
       res.status(500).json({ error: "Failed to backtest wallet strategy" });
+    }
+  });
+
+  // Start copy trading monitor
+  app.post("/api/copy-trading/start", async (req, res) => {
+    try {
+      copyTradingService.startMonitoring();
+      res.json({ 
+        status: "started",
+        message: "Copy trading monitor started",
+        monitoredWallets: copyTradingService.getMonitoredWallets().length
+      });
+    } catch (error) {
+      console.error("Error starting copy trading:", error);
+      res.status(500).json({ error: "Failed to start copy trading" });
+    }
+  });
+
+  // Stop copy trading monitor
+  app.post("/api/copy-trading/stop", async (req, res) => {
+    try {
+      copyTradingService.stopMonitoring();
+      res.json({ status: "stopped", message: "Copy trading monitor stopped" });
+    } catch (error) {
+      console.error("Error stopping copy trading:", error);
+      res.status(500).json({ error: "Failed to stop copy trading" });
+    }
+  });
+
+  // Get copy trading status and recent signals
+  app.get("/api/copy-trading/status", async (req, res) => {
+    try {
+      const status = {
+        isMonitoring: copyTradingService.isCurrentlyMonitoring(),
+        monitoredWallets: copyTradingService.getMonitoredWallets(),
+        recentSignals: copyTradingService.getRecentSignals(),
+        signalCount: copyTradingService.getRecentSignals().length
+      };
+      res.json(status);
+    } catch (error) {
+      console.error("Error getting copy trading status:", error);
+      res.status(500).json({ error: "Failed to get copy trading status" });
     }
   });
 

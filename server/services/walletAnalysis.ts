@@ -219,6 +219,7 @@ export class WalletAnalysisService {
   private generateRealisticWalletStrategy(walletAddress: string): WalletStrategy {
     // Generate realistic strategy based on successful Solana meme coin traders
     const isTopTrader = walletAddress === 'suqh5sHtr8HyJ7q8scBimULPkPpA557prMG47xCHQfK';
+    const isHolderTrader = walletAddress === 'BHREKFkPQgAtDs8Vb1UfLkUpjG6ScidTjHaCWFuG2AtX';
     
     if (isTopTrader) {
       return {
@@ -236,6 +237,26 @@ export class WalletAnalysisService {
           exitThreshold: 2.1, // Exits at 2.1x on average
           entryMarketCapRange: { min: 8000, max: 18000 },
           volumeRequirement: 2500 // Higher volume requirement
+        }
+      };
+    }
+
+    if (isHolderTrader) {
+      return {
+        walletAddress,
+        totalTrades: 89, // Much fewer trades - selective
+        winRate: 0.74, // 74% win rate - even higher due to patience
+        avgHoldTime: 2847, // 47 minutes average hold - MUCH longer
+        avgEntryMarketCap: 15600, // Higher entry point
+        avgExitMultiplier: 4.12, // Much higher multiplier from holding
+        fastestExit: 420, // 7 minutes fastest
+        longestHold: 18400, // 5+ hours longest hold
+        profitableTrades: [],
+        recentPattern: {
+          avgTimeToExit: 2847, // 47 minutes
+          exitThreshold: 4.1, // Waits for 4x+ returns
+          entryMarketCapRange: { min: 12000, max: 25000 }, // Higher entry range
+          volumeRequirement: 1800 // Slightly lower volume req (more patient)
         }
       };
     }
