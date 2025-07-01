@@ -8,6 +8,7 @@ import { dexApiService } from "./services/dexApi";
 import { momentumDetectionService } from "./services/momentumDetection";
 import { conversionAnalysisService } from "./services/conversionAnalysis";
 import { exitStrategyService } from "./services/exitStrategy";
+import { walletAnalysisService } from "./services/walletAnalysis";
 import { insertTradingParametersSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -335,6 +336,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error simulating exit patterns:", error);
       res.status(500).json({ error: "Failed to simulate exit patterns" });
+    }
+  });
+
+  // Analyze specific wallet strategy
+  app.get("/api/wallet/strategy/:walletAddress", async (req, res) => {
+    try {
+      const walletAddress = req.params.walletAddress;
+      if (!walletAddress || walletAddress.length < 32) {
+        return res.status(400).json({ error: "Invalid wallet address" });
+      }
+      
+      const strategy = await walletAnalysisService.analyzeWalletStrategy(walletAddress);
+      res.json(strategy);
+    } catch (error) {
+      console.error("Error analyzing wallet strategy:", error);
+      res.status(500).json({ error: "Failed to analyze wallet strategy" });
+    }
+  });
+
+  // Get historical tokens for backtesting
+  app.get("/api/backtest/tokens/:hoursBack", async (req, res) => {
+    try {
+      const hoursBack = parseInt(req.params.hoursBack) || 24;
+      if (hoursBack <= 0 || hoursBack > 168) { // Max 1 week
+        return res.status(400).json({ error: "Hours back must be between 1 and 168" });
+      }
+      
+      const tokens = await walletAnalysisService.getNewSolanaTokensForBacktest(hoursBack);
+      res.json(tokens);
+    } catch (error) {
+      console.error("Error getting historical tokens:", error);
+      res.status(500).json({ error: "Failed to get historical tokens" });
+    }
+  });
+
+  // Backtest wallet strategy against historical data
+  app.post("/api/backtest/wallet-strategy", async (req, res) => {
+    try {
+      const { walletAddress, hoursBack } = req.body;
+      
+      if (!walletAddress) {
+        return res.status(400).json({ error: "Wallet address required" });
+      }
+      
+      const hours = hoursBack || 24;
+      
+      // Get wallet strategy
+      const strategy = await walletAnalysisService.analyzeWalletStrategy(walletAddress);
+      
+      // Get historical tokens
+      const tokens = await walletAnalysisService.getNewSolanaTokensForBacktest(hours);
+      
+      // Run backtest
+      const results = await walletAnalysisService.backTestWalletStrategy(strategy, tokens);
+      
+      res.json({
+        walletStrategy: strategy,
+        backtestResults: results,
+        historicalTokenCount: tokens.length,
+        timeframe: `${hours} hours`
+      });
+    } catch (error) {
+      console.error("Error backtesting wallet strategy:", error);
+      res.status(500).json({ error: "Failed to backtest wallet strategy" });
     }
   });
 
