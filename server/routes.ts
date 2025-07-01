@@ -5,6 +5,7 @@ import { tradingEngine } from "./services/tradingEngine";
 import { backtestingService } from "./services/backtesting";
 import { solanaService } from "./services/solana";
 import { dexApiService } from "./services/dexApi";
+import { momentumDetectionService } from "./services/momentumDetection";
 import { insertTradingParametersSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -233,6 +234,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ error: "Failed to get portfolio stats" });
+    }
+  });
+
+  // Get momentum signals for smart entry timing
+  app.get("/api/momentum/signals", async (req, res) => {
+    try {
+      const signals = await momentumDetectionService.getAllMomentumSignals();
+      res.json(signals);
+    } catch (error) {
+      console.error("Error getting momentum signals:", error);
+      res.status(500).json({ error: "Failed to get momentum signals" });
     }
   });
 
