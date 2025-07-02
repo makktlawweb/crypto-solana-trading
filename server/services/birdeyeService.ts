@@ -41,11 +41,11 @@ export class BirdeyeService {
 
     const testResults: any = {};
     
-    // Test basic token endpoint
+    // Test basic public token endpoint (free tier)
     try {
       const response = await axios.get(`${this.baseUrl}/defi/token_overview`, {
         headers: { 'X-API-KEY': this.apiKey },
-        params: { address: 'So11111111111111111111111111111111111111112' }
+        params: { address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v' } // USDC
       });
       testResults.tokenOverview = { status: 'success', data: response.status };
     } catch (error: any) {
@@ -55,13 +55,12 @@ export class BirdeyeService {
       };
     }
 
-    // Test wallet PnL endpoint (for trader tracking)
+    // Test wallet analytics endpoint (for trader tracking)
     try {
-      const response = await axios.get(`${this.baseUrl}/wallet/pnl_single`, {
+      const response = await axios.get(`${this.baseUrl}/v1/wallet/token_list`, {
         headers: { 'X-API-KEY': this.apiKey },
         params: { 
-          wallet: 'BHREK8rHjSJ5KqkW3FfDtmGJPyGM2G2AtX',
-          timeframe: '7d'
+          wallet: 'BHREK8rHjSJ5KqkW3FfDtmGJPyGM2G2AtX'
         }
       });
       testResults.walletPnl = { status: 'success', data: response.status };

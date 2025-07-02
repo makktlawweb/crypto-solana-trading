@@ -14,6 +14,8 @@ import { paperTradingService } from "./services/paperTrading";
 import { riskManagementService } from "./services/riskManagement";
 import { extendedWalletAnalysisService } from "./services/extendedWalletAnalysis";
 import { birdeyeService } from "./services/birdeyeService";
+import { heliusService } from "./services/heliusService";
+import { solanaWalletTracker } from "./services/solanaWalletTracker";
 import { technicalAnalysisService } from "./services/technicalAnalysis";
 import { liveCopyTradingService } from "./services/liveCopyTrading";
 import { portfolioManager } from "./services/portfolioManager";
@@ -769,14 +771,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Live Copy Trading System Endpoints
   
-  // Test Birdeye API connection
+  // Test live trading connections
   app.get("/api/copy-trading/test-birdeye-connection", async (req, res) => {
     try {
-      const testResult = await birdeyeService.testConnection();
-      res.json(testResult);
+      const solanaTest = await solanaWalletTracker.testConnection();
+      const birdeyeTest = await birdeyeService.testConnection();
+      
+      res.json({
+        solanaWalletTracker: solanaTest,
+        birdeye: birdeyeTest,
+        status: solanaTest.connected ? 'Live wallet tracking active' : 'Using demo data',
+        walletsTracked: solanaTest.walletsTracked
+      });
     } catch (error) {
-      console.error('Error testing Birdeye connection:', error);
-      res.status(500).json({ error: 'Failed to test connection' });
+      console.error('Error testing trading connections:', error);
+      res.status(500).json({ error: 'Failed to test connections' });
     }
   });
 
