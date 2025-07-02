@@ -769,6 +769,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Live Copy Trading System Endpoints
   
+  // Test Birdeye API connection
+  app.get("/api/copy-trading/test-birdeye-connection", async (req, res) => {
+    try {
+      const testResult = await birdeyeService.testConnection();
+      res.json(testResult);
+    } catch (error) {
+      console.error('Error testing Birdeye connection:', error);
+      res.status(500).json({ error: 'Failed to test connection' });
+    }
+  });
+
   // Get live copy trading status
   app.get("/api/live-copy-trading/status", async (req, res) => {
     try {
