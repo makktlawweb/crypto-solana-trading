@@ -1067,6 +1067,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User wallet management endpoints
+  app.post("/api/user-wallet", async (req, res) => {
+    try {
+      const { publicKey, name } = req.body;
+      const { walletIntegration } = await import('./services/walletIntegration');
+      
+      const wallet = await walletIntegration.addUserWallet(publicKey, name);
+      res.json(wallet);
+    } catch (error) {
+      console.error("Error adding user wallet:", error);
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/user-wallets", async (req, res) => {
+    try {
+      const { walletIntegration } = await import('./services/walletIntegration');
+      const wallets = walletIntegration.getUserWallets();
+      res.json(wallets);
+    } catch (error) {
+      console.error("Error fetching user wallets:", error);
+      res.status(500).json({ error: "Failed to fetch user wallets" });
+    }
+  });
+
+  app.get("/api/user-wallet/:publicKey/balance", async (req, res) => {
+    try {
+      const { publicKey } = req.params;
+      const { walletIntegration } = await import('./services/walletIntegration');
+      
+      const balance = await walletIntegration.getWalletBalance(publicKey);
+      res.json({ balance });
+    } catch (error) {
+      console.error("Error fetching wallet balance:", error);
+      res.status(500).json({ error: "Failed to fetch wallet balance" });
+    }
+  });
+
+  app.post("/api/user-wallet/:publicKey/activate-copy-trading", async (req, res) => {
+    try {
+      const { publicKey } = req.params;
+      const { walletIntegration } = await import('./services/walletIntegration');
+      
+      const activated = await walletIntegration.activateCopyTrading(publicKey);
+      res.json({ activated, message: activated ? "Copy trading activated" : "Insufficient balance" });
+    } catch (error) {
+      console.error("Error activating copy trading:", error);
+      res.status(400).json({ error: error.message });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
