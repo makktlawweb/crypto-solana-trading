@@ -27,8 +27,19 @@ export class AutomatedCopyTradingService {
       
       // Handle different input formats
       if (typeof privateKeyInput === 'string') {
-        // Base58 format
-        privateKeyBytes = this.base58ToUint8Array(privateKeyInput);
+        // Try to parse as JSON array first, then fall back to base58
+        try {
+          const parsed = JSON.parse(privateKeyInput);
+          if (Array.isArray(parsed)) {
+            privateKeyBytes = new Uint8Array(parsed);
+          } else {
+            // Base58 format
+            privateKeyBytes = this.base58ToUint8Array(privateKeyInput);
+          }
+        } catch (parseError) {
+          // Base58 format
+          privateKeyBytes = this.base58ToUint8Array(privateKeyInput);
+        }
       } else if (Array.isArray(privateKeyInput)) {
         // Array format [1, 2, 3, ...]
         privateKeyBytes = new Uint8Array(privateKeyInput);
@@ -101,14 +112,17 @@ export class AutomatedCopyTradingService {
       isRead: false
     });
 
-    // Start monitoring the Momentum Trader every 10 seconds
+    // Start ultra-high-frequency monitoring for maximum speed
     this.monitoringInterval = setInterval(async () => {
       if (this.isActive) {
         await this.checkForNewTrades();
       }
-    }, 10000); // Check every 10 seconds
+    }, 2000); // Check every 2 seconds for maximum responsiveness
 
-    console.log('🚀 Automated copy trading started - monitoring every 10 seconds');
+    console.log('🚀 Ultra-fast automated copy trading started - monitoring every 2 seconds for maximum speed');
+    
+    // Also start immediate monitoring burst for first few minutes
+    this.startHighFrequencyBurst();
   }
 
   private async checkForNewTrades(): Promise<void> {
