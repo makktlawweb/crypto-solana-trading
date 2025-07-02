@@ -123,11 +123,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Commercial Vision
 
-**Retail Copy Trading Platform:**
-- User validated system performance and commercial potential
-- Plans to scale to retail market with small percentage fee model on copy trades
-- Focus on learning and replicating successful trader patterns for broader market access
-- Target: Making professional trading strategies accessible to everyday investors
+**SaaS Copy Trading Platform - "SolanaTrader Pro":**
+- Direct Solana RPC integration eliminates API costs and limitations
+- Proven system with live wallet tracking of 77.8% win rate traders
+- User validated performance and commercial scalability potential
+- Subscription model: $29/month basic, $99/month pro with unlimited wallets
+- Revenue streams: Monthly subscriptions + small copy trade execution fees (0.5%)
+- Target market: Retail crypto traders seeking automated profitable strategies
+- Competitive advantage: No API dependencies, direct blockchain access, proven trader selection
+- Commercial validation: User willing to invest $500 + expressed strong interest in monetization
 
 ## Strategy Testing Summary
 
