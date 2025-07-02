@@ -21,10 +21,21 @@ export class AutomatedCopyTradingService {
     this.connection = new Connection('https://api.mainnet-beta.solana.com');
   }
 
-  async initializeUserWallet(privateKeyBase58: string): Promise<boolean> {
+  async initializeUserWallet(privateKeyInput: string | number[]): Promise<boolean> {
     try {
-      // Convert base58 private key to Keypair
-      const privateKeyBytes = this.base58ToUint8Array(privateKeyBase58);
+      let privateKeyBytes: Uint8Array;
+      
+      // Handle different input formats
+      if (typeof privateKeyInput === 'string') {
+        // Base58 format
+        privateKeyBytes = this.base58ToUint8Array(privateKeyInput);
+      } else if (Array.isArray(privateKeyInput)) {
+        // Array format [1, 2, 3, ...]
+        privateKeyBytes = new Uint8Array(privateKeyInput);
+      } else {
+        throw new Error('Invalid private key format');
+      }
+      
       this.userKeypair = Keypair.fromSecretKey(privateKeyBytes);
       
       // Verify wallet balance

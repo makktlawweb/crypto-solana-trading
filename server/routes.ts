@@ -1124,6 +1124,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { privateKey } = req.body;
       const { automatedCopyTradingService } = await import('./services/automatedCopyTrading');
       
+      // privateKey can be either a base58 string or an array of numbers
       const initialized = await automatedCopyTradingService.initializeUserWallet(privateKey);
       res.json({ initialized, message: initialized ? "Automated trading wallet initialized" : "Failed to initialize wallet" });
     } catch (error) {
