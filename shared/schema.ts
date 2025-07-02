@@ -48,6 +48,8 @@ export const trades = pgTable("trades", {
   entryPrice: real("entry_price").notNull(),
   exitPrice: real("exit_price"),
   quantity: real("quantity").notNull(),
+  entryValue: real("entry_value"), // USD value at entry
+  exitValue: real("exit_value"), // USD value at exit
   entryTime: timestamp("entry_time").notNull(),
   exitTime: timestamp("exit_time"),
   duration: integer("duration"), // Duration in seconds

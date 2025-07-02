@@ -16,6 +16,7 @@ import { extendedWalletAnalysisService } from "./services/extendedWalletAnalysis
 import { birdeyeService } from "./services/birdeyeService";
 import { technicalAnalysisService } from "./services/technicalAnalysis";
 import { liveCopyTradingService } from "./services/liveCopyTrading";
+import { portfolioManager } from "./services/portfolioManager";
 import { insertTradingParametersSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -888,6 +889,161 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error generating wallet:", error);
       res.status(500).json({ error: "Failed to generate wallet" });
+    }
+  });
+
+  // Portfolio Management and Risk Assessment Endpoints
+  
+  // Get comprehensive portfolio metrics
+  app.get("/api/portfolio/metrics", async (req, res) => {
+    try {
+      const metrics = await portfolioManager.getPortfolioMetrics();
+      res.json(metrics);
+    } catch (error) {
+      console.error("Error getting portfolio metrics:", error);
+      res.status(500).json({ error: "Failed to get portfolio metrics" });
+    }
+  });
+
+  // Get risk assessment
+  app.get("/api/portfolio/risk-assessment", async (req, res) => {
+    try {
+      const riskAssessment = await portfolioManager.assessRisk();
+      res.json(riskAssessment);
+    } catch (error) {
+      console.error("Error assessing portfolio risk:", error);
+      res.status(500).json({ error: "Failed to assess portfolio risk" });
+    }
+  });
+
+  // Get performance analytics
+  app.get("/api/portfolio/analytics", async (req, res) => {
+    try {
+      const analytics = await portfolioManager.getPerformanceAnalytics();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error getting performance analytics:", error);
+      res.status(500).json({ error: "Failed to get performance analytics" });
+    }
+  });
+
+  // Add a new position to portfolio
+  app.post("/api/portfolio/positions", async (req, res) => {
+    try {
+      const { tokenAddress, entryPrice, quantity } = req.body;
+      
+      if (!tokenAddress || !entryPrice || !quantity) {
+        return res.status(400).json({ error: "Missing required fields: tokenAddress, entryPrice, quantity" });
+      }
+
+      await portfolioManager.addPosition(tokenAddress, entryPrice, quantity);
+      res.json({ success: true, message: "Position added to portfolio" });
+    } catch (error) {
+      console.error("Error adding position:", error);
+      res.status(500).json({ error: "Failed to add position" });
+    }
+  });
+
+  // Update position price (for real-time updates)
+  app.patch("/api/portfolio/positions/:tokenAddress", async (req, res) => {
+    try {
+      const { tokenAddress } = req.params;
+      const { currentPrice } = req.body;
+      
+      if (!currentPrice) {
+        return res.status(400).json({ error: "Missing currentPrice" });
+      }
+
+      await portfolioManager.updatePositionPrice(tokenAddress, currentPrice);
+      res.json({ success: true, message: "Position price updated" });
+    } catch (error) {
+      console.error("Error updating position price:", error);
+      res.status(500).json({ error: "Failed to update position price" });
+    }
+  });
+
+  // Close a position
+  app.delete("/api/portfolio/positions/:tokenAddress", async (req, res) => {
+    try {
+      const { tokenAddress } = req.params;
+      const { exitPrice } = req.body;
+      
+      if (!exitPrice) {
+        return res.status(400).json({ error: "Missing exitPrice" });
+      }
+
+      await portfolioManager.closePosition(tokenAddress, exitPrice);
+      res.json({ success: true, message: "Position closed successfully" });
+    } catch (error) {
+      console.error("Error closing position:", error);
+      res.status(500).json({ error: "Failed to close position" });
+    }
+  });
+
+  // Get portfolio allocation breakdown
+  app.get("/api/portfolio/allocation", async (req, res) => {
+    try {
+      const metrics = await portfolioManager.getPortfolioMetrics();
+      const allocation = {
+        cash: {
+          amount: metrics.cashBalance,
+          percentage: metrics.portfolioAllocation.cash
+        },
+        positions: metrics.positions.map(pos => ({
+          tokenAddress: pos.tokenAddress,
+          tokenName: pos.tokenName,
+          value: pos.currentValue,
+          percentage: (pos.currentValue / metrics.totalValue) * 100,
+          pnl: pos.unrealizedPnL,
+          pnlPercent: pos.unrealizedPnLPercent,
+          riskLevel: pos.riskLevel
+        })),
+        summary: {
+          totalValue: metrics.totalValue,
+          totalPositions: metrics.positions.length,
+          largestPosition: Math.max(...metrics.positions.map(p => p.currentValue), 0),
+          concentration: metrics.positions.length > 0 ? 
+            (Math.max(...metrics.positions.map(p => p.currentValue)) / metrics.totalValue) * 100 : 0
+        }
+      };
+      
+      res.json(allocation);
+    } catch (error) {
+      console.error("Error getting portfolio allocation:", error);
+      res.status(500).json({ error: "Failed to get portfolio allocation" });
+    }
+  });
+
+  // Get risk alerts and recommendations
+  app.get("/api/portfolio/risk-alerts", async (req, res) => {
+    try {
+      const riskAssessment = await portfolioManager.assessRisk();
+      
+      const alerts = {
+        severity: riskAssessment.overallRisk,
+        score: riskAssessment.riskScore,
+        activeWarnings: riskAssessment.warnings.length,
+        warnings: riskAssessment.warnings,
+        recommendations: riskAssessment.recommendations,
+        urgentActions: riskAssessment.warnings.filter(warning => 
+          warning.includes('High risk') || 
+          warning.includes('concentrated') || 
+          warning.includes('Low cash')
+        ),
+        portfolioHealth: {
+          score: Math.round((
+            riskAssessment.portfolioHealth.diversification +
+            riskAssessment.portfolioHealth.liquidity +
+            (100 - riskAssessment.portfolioHealth.concentration)
+          ) / 3),
+          breakdown: riskAssessment.portfolioHealth
+        }
+      };
+      
+      res.json(alerts);
+    } catch (error) {
+      console.error("Error getting risk alerts:", error);
+      res.status(500).json({ error: "Failed to get risk alerts" });
     }
   });
 

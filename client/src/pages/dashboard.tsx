@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Bot, Settings, Radio, Activity, TrendingUp, Shield, Bell } from "lucide-react";
+import { Bot, Settings, Radio, Activity, TrendingUp, Shield, Bell, PieChart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ParametersSection from "@/components/ParametersSection";
 import LiveMonitoring from "@/components/LiveMonitoring";
@@ -7,6 +7,7 @@ import BacktestingTab from "@/components/BacktestingTab";
 import RiskManagement from "@/components/RiskManagement";
 import RecentAlerts from "@/components/RecentAlerts";
 import { useState } from "react";
+import { Link } from "wouter";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<"live-monitoring" | "backtesting">("live-monitoring");
@@ -79,6 +80,10 @@ export default function Dashboard() {
               <Radio className="w-5 h-5" />
               <span>Live Monitoring</span>
             </a>
+            <Link href="/portfolio" className="flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-300 hover:bg-gray-700 transition-colors">
+              <PieChart className="w-5 h-5" />
+              <span>Portfolio</span>
+            </Link>
           </nav>
 
           {/* Quick Status */}
