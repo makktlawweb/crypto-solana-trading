@@ -1077,7 +1077,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(wallet);
     } catch (error) {
       console.error("Error adding user wallet:", error);
-      res.status(400).json({ error: error.message });
+      res.status(400).json({ error: (error as Error).message });
     }
   });
 
@@ -1114,7 +1114,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ activated, message: activated ? "Copy trading activated" : "Insufficient balance" });
     } catch (error) {
       console.error("Error activating copy trading:", error);
-      res.status(400).json({ error: error.message });
+      res.status(400).json({ error: (error as Error).message });
+    }
+  });
+
+  // Automated copy trading endpoints
+  app.post("/api/automated-trading/initialize", async (req, res) => {
+    try {
+      const { privateKey } = req.body;
+      const { automatedCopyTradingService } = await import('./services/automatedCopyTrading');
+      
+      const initialized = await automatedCopyTradingService.initializeUserWallet(privateKey);
+      res.json({ initialized, message: initialized ? "Automated trading wallet initialized" : "Failed to initialize wallet" });
+    } catch (error) {
+      console.error("Error initializing automated trading:", error);
+      res.status(400).json({ error: (error as Error).message });
+    }
+  });
+
+  app.post("/api/automated-trading/start", async (req, res) => {
+    try {
+      const { automatedCopyTradingService } = await import('./services/automatedCopyTrading');
+      
+      await automatedCopyTradingService.startAutomatedCopyTrading();
+      res.json({ message: "Automated copy trading started" });
+    } catch (error) {
+      console.error("Error starting automated trading:", error);
+      res.status(400).json({ error: (error as Error).message });
+    }
+  });
+
+  app.post("/api/automated-trading/stop", async (req, res) => {
+    try {
+      const { automatedCopyTradingService } = await import('./services/automatedCopyTrading');
+      
+      await automatedCopyTradingService.stopAutomatedCopyTrading();
+      res.json({ message: "Automated copy trading stopped" });
+    } catch (error) {
+      console.error("Error stopping automated trading:", error);
+      res.status(400).json({ error: (error as Error).message });
+    }
+  });
+
+  app.get("/api/automated-trading/status", async (req, res) => {
+    try {
+      const { automatedCopyTradingService } = await import('./services/automatedCopyTrading');
+      
+      const status = automatedCopyTradingService.getStatus();
+      res.json(status);
+    } catch (error) {
+      console.error("Error getting automated trading status:", error);
+      res.status(500).json({ error: "Failed to get status" });
+    }
+  });
+
+  app.post("/api/automated-trading/emergency-stop", async (req, res) => {
+    try {
+      const { automatedCopyTradingService } = await import('./services/automatedCopyTrading');
+      
+      await automatedCopyTradingService.emergencyStop();
+      res.json({ message: "Emergency stop activated" });
+    } catch (error) {
+      console.error("Error activating emergency stop:", error);
+      res.status(500).json({ error: "Failed to activate emergency stop" });
     }
   });
 
