@@ -1,6 +1,7 @@
 import { Connection, PublicKey, Keypair, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { storage } from '../storage';
 import { liveCopyTradingService } from './liveCopyTrading';
+import { solanaWalletTracker } from './solanaWalletTracker';
 
 export interface AutomatedTradeExecution {
   walletAddress: string;
@@ -120,16 +121,13 @@ export class AutomatedCopyTradingService {
     }, 2000); // Check every 2 seconds for maximum responsiveness
 
     console.log('🚀 Ultra-fast automated copy trading started - monitoring every 2 seconds for maximum speed');
-    
-    // Also start immediate monitoring burst for first few minutes
-    this.startHighFrequencyBurst();
   }
 
   private async checkForNewTrades(): Promise<void> {
     try {
       // Get latest trades from Momentum Trader
       const momentumTraderAddress = 'BHREK2ymxgRSkgFUHGXn3c98KjHBcrJ2kTZnG2AtX';
-      const recentTrades = await liveCopyTradingService.getWalletTransactions(momentumTraderAddress, 1);
+      const recentTrades = await solanaWalletTracker.getWalletTransactions(momentumTraderAddress, 1);
       
       if (recentTrades.length > 0) {
         const latestTrade = recentTrades[0];
@@ -137,7 +135,8 @@ export class AutomatedCopyTradingService {
         // Check if this is a new trade we haven't processed
         const existingTrades = await storage.getAllTrades();
         const alreadyProcessed = existingTrades.some(trade => 
-          trade.sourceTransaction === latestTrade.signature
+          trade.tokenAddress === latestTrade.tokenAddress && 
+          Math.abs(trade.entryTime.getTime() - latestTrade.timestamp) < 60000 // Within 1 minute
         );
 
         if (!alreadyProcessed && this.shouldCopyTrade(latestTrade)) {
@@ -152,8 +151,8 @@ export class AutomatedCopyTradingService {
   private shouldCopyTrade(trade: any): boolean {
     // Only copy buy trades from tokens with good market cap
     if (trade.type !== 'buy') return false;
-    if (trade.marketCap < 5000) return false; // Minimum 5K market cap
-    if (trade.marketCap > 50000) return false; // Maximum 50K market cap for meme coins
+    if (trade.value < 5000) return false; // Minimum 5K value
+    if (trade.value > 50000) return false; // Maximum 50K value for meme coins
     
     return true;
   }
@@ -171,7 +170,7 @@ export class AutomatedCopyTradingService {
       
       await storage.createAlert({
         type: 'info',
-        message: `🎯 COPY TRADE DETECTED: ${momentumTrade.tokenName || 'Unknown Token'} - Market Cap: $${momentumTrade.marketCap.toLocaleString()} - Executing $${positionSize} position`,
+        message: `🎯 COPY TRADE DETECTED: ${momentumTrade.tokenSymbol || 'Unknown Token'} - Value: $${momentumTrade.value.toLocaleString()} - Executing $${positionSize} position`,
         isRead: false
       });
 
@@ -181,27 +180,27 @@ export class AutomatedCopyTradingService {
       // Record the trade
       await storage.createTrade({
         tokenAddress: tokenAddress,
-        tokenName: momentumTrade.tokenName || 'Copy Trade',
+        tokenName: momentumTrade.tokenSymbol || 'Copy Trade',
         entryPrice: momentumTrade.price,
+        quantity: solAmount,
+        entryValue: positionSize,
         entryTime: new Date(),
-        positionSize: positionSize,
-        sourceTransaction: momentumTrade.signature,
-        strategy: 'Momentum Copy',
-        status: 'active'
+        isBacktest: false
       });
 
       await storage.createAlert({
         type: 'success',
-        message: `✅ COPY TRADE EXECUTED: ${momentumTrade.tokenName} - Entry: $${momentumTrade.price.toFixed(6)} - Position: $${positionSize} - Following Momentum Trader`,
+        message: `✅ COPY TRADE EXECUTED: ${momentumTrade.tokenSymbol} - Entry: $${momentumTrade.price.toFixed(6)} - Position: $${positionSize} - Following Momentum Trader`,
         isRead: false
       });
 
       console.log(`✅ Copy trade executed: ${tokenAddress} - $${positionSize} position`);
     } catch (error) {
-      console.error('Error executing copy trade:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Error executing copy trade:', errorMessage);
       await storage.createAlert({
         type: 'error',
-        message: `❌ Copy trade execution failed: ${error.message}`,
+        message: `❌ Copy trade execution failed: ${errorMessage}`,
         isRead: false
       });
     }
@@ -265,8 +264,8 @@ export class AutomatedCopyTradingService {
     
     for (const trade of openTrades) {
       await storage.updateTrade(trade.id, {
-        status: 'emergency_stop',
-        exitReason: 'Emergency stop activated'
+        exitReason: 'Emergency stop activated',
+        exitTime: new Date()
       });
     }
 
