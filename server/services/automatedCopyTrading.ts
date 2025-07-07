@@ -131,7 +131,9 @@ export class AutomatedCopyTradingService {
       
       if (recentTrades.length > 0) {
         const latestTrade = recentTrades[0];
-        console.log(`🔍 Monitoring: ${latestTrade.tokenSymbol} - ${latestTrade.type} - $${latestTrade.value.toLocaleString()}`);
+        const solPrice = 180; // Approximate
+        const tradeSolAmount = latestTrade.value / solPrice;
+        console.log(`🔍 Monitoring: ${latestTrade.tokenSymbol} - ${latestTrade.type} - ${tradeSolAmount.toFixed(2)} SOL ($${latestTrade.value.toLocaleString()})`);
         
         // Check if this is a new trade we haven't processed
         const existingTrades = await storage.getAllTrades();
@@ -156,6 +158,13 @@ export class AutomatedCopyTradingService {
     if (trade.value < 5000) return false; // Minimum 5K value
     if (trade.value > 50000) return false; // Maximum 50K value for meme coins
     
+    // Calculate SOL amount from trade value (rough estimate)
+    const solPrice = 180; // Approximate SOL price
+    const tradeAmountSol = trade.value / solPrice;
+    
+    // Ignore tiny trades under 0.01 SOL (less than $1.80)
+    if (tradeAmountSol < 0.01) return false;
+    
     return true;
   }
 
@@ -164,15 +173,27 @@ export class AutomatedCopyTradingService {
 
     try {
       const tokenAddress = momentumTrade.tokenAddress;
-      const positionSize = 25; // $25 USD position size
       
-      // Calculate SOL amount needed (rough estimate)
+      // Calculate prorated position size based on his trade amount
       const solPrice = await this.getSolPrice();
-      const solAmount = positionSize / solPrice;
+      const hisTradeAmountSol = momentumTrade.value / solPrice;
+      
+      // Prorating logic:
+      // - His 1 SOL trade = Our ~$5 trade (conservative 1:5 ratio)
+      // - His 24 SOL trade = Our ~$120 trade (capped at reasonable max)
+      // - Minimum our trade: $5, Maximum our trade: $100
+      let ourPositionSizeUsd = Math.max(5, Math.min(100, hisTradeAmountSol * 5));
+      
+      // Round to nice numbers
+      if (ourPositionSizeUsd < 10) ourPositionSizeUsd = 5;
+      else if (ourPositionSizeUsd < 25) ourPositionSizeUsd = Math.round(ourPositionSizeUsd / 5) * 5;
+      else ourPositionSizeUsd = Math.round(ourPositionSizeUsd / 10) * 10;
+      
+      const solAmount = ourPositionSizeUsd / solPrice;
       
       await storage.createAlert({
         type: 'info',
-        message: `🎯 COPY TRADE DETECTED: ${momentumTrade.tokenSymbol || 'Unknown Token'} - Value: $${momentumTrade.value.toLocaleString()} - Executing $${positionSize} position`,
+        message: `🎯 COPY TRADE DETECTED: ${momentumTrade.tokenSymbol || 'Unknown Token'} - His: ${hisTradeAmountSol.toFixed(2)} SOL ($${momentumTrade.value.toLocaleString()}) - Our: $${ourPositionSizeUsd} (${(ourPositionSizeUsd/momentumTrade.value*100).toFixed(1)}% scaled)`,
         isRead: false
       });
 
@@ -185,18 +206,18 @@ export class AutomatedCopyTradingService {
         tokenName: momentumTrade.tokenSymbol || 'Copy Trade',
         entryPrice: momentumTrade.price,
         quantity: solAmount,
-        entryValue: positionSize,
+        entryValue: ourPositionSizeUsd,
         entryTime: new Date(),
         isBacktest: false
       });
 
       await storage.createAlert({
         type: 'success',
-        message: `✅ COPY TRADE EXECUTED: ${momentumTrade.tokenSymbol} - Entry: $${momentumTrade.price.toFixed(6)} - Position: $${positionSize} - Following Momentum Trader`,
+        message: `✅ COPY TRADE EXECUTED: ${momentumTrade.tokenSymbol} - Entry: $${momentumTrade.price.toFixed(6)} - Position: $${ourPositionSizeUsd} (${hisTradeAmountSol.toFixed(2)} SOL → $${ourPositionSizeUsd} scaled)`,
         isRead: false
       });
 
-      console.log(`✅ Copy trade executed: ${tokenAddress} - $${positionSize} position`);
+      console.log(`✅ Copy trade executed: ${tokenAddress} - $${ourPositionSizeUsd} position (scaled from his ${hisTradeAmountSol.toFixed(2)} SOL)`);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('Error executing copy trade:', errorMessage);
