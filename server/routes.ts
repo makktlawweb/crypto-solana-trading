@@ -18,6 +18,9 @@ import { heliusService } from "./services/heliusService";
 import { solanaWalletTracker } from "./services/solanaWalletTracker";
 import { technicalAnalysisService } from "./services/technicalAnalysis";
 import { liveCopyTradingService } from "./services/liveCopyTrading";
+import { eliteWalletAnalysisService } from "./services/eliteWalletAnalysis";
+import { socialIntelligenceService } from "./services/socialIntelligence";
+import { blockchainAnalysisService } from "./services/blockchainAnalysis";
 import { portfolioManager } from "./services/portfolioManager";
 import { insertTradingParametersSchema } from "@shared/schema";
 
@@ -1182,5 +1185,135 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+  // Elite Wallet Analysis Endpoints
+  
+  // Analyze early buyers of a specific token
+  app.get("/api/blockchain-analysis/early-buyers/:tokenAddress", async (req, res) => {
+    try {
+      const { tokenAddress } = req.params;
+      const { maxMarketCap } = req.query;
+      
+      const analysis = await blockchainAnalysisService.analyzeTokenEarlyBuyers(
+        tokenAddress,
+        maxMarketCap ? parseInt(maxMarketCap as string) : 1000000
+      );
+      
+      if (!analysis) {
+        return res.status(404).json({ error: "Failed to analyze token" });
+      }
+      
+      res.json({
+        success: true,
+        tokenAddress,
+        analysis
+      });
+    } catch (error) {
+      console.error("Error analyzing early buyers:", error);
+      res.status(500).json({ error: "Failed to analyze early buyers" });
+    }
+  });
+
+  // Find multi-token winners (the real elite traders)
+  app.get("/api/blockchain-analysis/multi-winners", async (req, res) => {
+    try {
+      const winners = await blockchainAnalysisService.findMultiTokenWinners();
+      
+      const legends = winners.filter(w => w.rank === 'legend');
+      const consistent = winners.filter(w => w.rank === 'consistent');
+      
+      res.json({
+        success: true,
+        totalWinners: winners.length,
+        breakdown: {
+          legends: legends.length,
+          consistent: consistent.length,
+          totalAnalyzed: winners.length
+        },
+        eliteWallets: winners
+      });
+    } catch (error) {
+      console.error("Error finding multi-token winners:", error);
+      res.status(500).json({ error: "Failed to find multi-token winners" });
+    }
+  });
+
+  // Get confirmed successful tokens for analysis
+  app.get("/api/blockchain-analysis/confirmed-tokens", async (req, res) => {
+    try {
+      const tokens = await blockchainAnalysisService.getConfirmedTokens();
+      
+      res.json({
+        success: true,
+        confirmedTokens: tokens.length,
+        tokens
+      });
+    } catch (error) {
+      console.error("Error getting confirmed tokens:", error);
+      res.status(500).json({ error: "Failed to get confirmed tokens" });
+    }
+  });
+
+  // Add new token for analysis
+  app.post("/api/blockchain-analysis/add-token", async (req, res) => {
+    try {
+      const { address, symbol, peakMarketCap } = req.body;
+      
+      if (!address || !symbol || !peakMarketCap) {
+        return res.status(400).json({ error: "Address, symbol, and peak market cap required" });
+      }
+      
+      await blockchainAnalysisService.addTokenForAnalysis(address, symbol, peakMarketCap);
+      
+      res.json({
+        success: true,
+        message: `Added ${symbol} to analysis targets`,
+        peakMarketCap
+      });
+    } catch (error) {
+      console.error("Error adding token for analysis:", error);
+      res.status(500).json({ error: "Failed to add token for analysis" });
+    }
+  });
+
+  // Test blockchain analysis with real BONK data
+  app.get("/api/blockchain-analysis/test-bonk", async (req, res) => {
+    try {
+      console.log("🧪 Testing blockchain analysis with real BONK data...");
+      
+      const bonkAddress = "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263";
+      const maxMarketCap = 10000000; // $10M filter for early buyers
+      
+      const analysis = await blockchainAnalysisService.analyzeTokenEarlyBuyers(bonkAddress, maxMarketCap);
+      
+      if (!analysis) {
+        return res.status(404).json({ 
+          error: "Failed to analyze BONK",
+          note: "This might be due to RPC limits or complex transaction parsing" 
+        });
+      }
+      
+      res.json({
+        success: true,
+        testResults: {
+          tokenTested: "BONK",
+          address: bonkAddress,
+          maxMarketCapFilter: maxMarketCap,
+          analysisComplete: true,
+          eliteBuyersFound: analysis.totalEarlyBuyers,
+          topBuyers: analysis.eliteBuyers.slice(0, 5), // First 5 buyers
+          peakMarketCap: analysis.peakMarketCap,
+          note: "Real blockchain data analysis successful"
+        }
+      });
+    } catch (error) {
+      console.error("Error testing BONK analysis:", error);
+      res.status(500).json({ 
+        error: "Failed to test BONK analysis",
+        details: error.message,
+        note: "This is expected during development - real blockchain analysis requires significant RPC resources"
+      });
+    }
+  });
+
   return httpServer;
 }
