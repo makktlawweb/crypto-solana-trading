@@ -29,7 +29,7 @@ export class SolanaWalletTracker {
   // Our known profitable wallets with verified performance
   private trackedWallets: TrackedWallet[] = [
     {
-      address: 'BHREK8rHjSJ5KqkW3FfDtmGJPyGM2G2AtX',
+      address: 'BHREKFkPQgAtDs8Vb1UfLkUpjG6ScidTjHaCWFuG2AtX',
       name: 'Momentum Trader',
       strategy: 'momentum_holder',
       totalPnL: 6923,

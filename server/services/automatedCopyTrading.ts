@@ -126,11 +126,12 @@ export class AutomatedCopyTradingService {
   private async checkForNewTrades(): Promise<void> {
     try {
       // Get latest trades from Momentum Trader
-      const momentumTraderAddress = 'BHREK2ymxgRSkgFUHGXn3c98KjHBcrJ2kTZnG2AtX';
+      const momentumTraderAddress = 'BHREKFkPQgAtDs8Vb1UfLkUpjG6ScidTjHaCWFuG2AtX';
       const recentTrades = await solanaWalletTracker.getWalletTransactions(momentumTraderAddress, 1);
       
       if (recentTrades.length > 0) {
         const latestTrade = recentTrades[0];
+        console.log(`🔍 Monitoring: ${latestTrade.tokenSymbol} - ${latestTrade.type} - $${latestTrade.value.toLocaleString()}`);
         
         // Check if this is a new trade we haven't processed
         const existingTrades = await storage.getAllTrades();
@@ -140,6 +141,7 @@ export class AutomatedCopyTradingService {
         );
 
         if (!alreadyProcessed && this.shouldCopyTrade(latestTrade)) {
+          console.log(`🎯 COPY TRADE TRIGGER: ${latestTrade.tokenSymbol} meets criteria - executing copy trade`);
           await this.executeCopyTrade(latestTrade);
         }
       }
