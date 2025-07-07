@@ -5,19 +5,50 @@
 ### Core Value Proposition
 Transform any profitable trader into a monetizable signal source through intelligent wallet monitoring and instant trade alerts.
 
-## Product Tiers & Revenue Model
+## Product Tiers & Revenue Model (Freemium Strategy)
 
-### Tier 1: Wallet Watcher/Alerter (Primary Focus)
+### Free Tier: Wallet Analyzer (Hook Users)
 **User Flow:**
-1. Enter target wallet address
-2. Configure alert preferences (position size thresholds, token filters)
-3. Receive instant notifications when trades occur
-4. Manual execution with provided trade details
+1. Enter any wallet address
+2. Click "Analyze" button
+3. Get instant performance summary:
+   - Last 10 minutes of activity (completely free)
+   - Last hour performance (free with signup)
+   - Win rate, average position size, recent trades
+4. See upgrade prompts for deeper analysis
 
-**Revenue Model:**
-- Monthly subscription: $29/month per wallet
-- Premium: $99/month for 5 wallets + advanced filters
-- Enterprise: $299/month unlimited wallets + API access
+**Features:**
+- 10-minute real-time analysis (no signup)
+- 1-hour analysis (email signup)
+- Basic performance metrics
+- Sample of recent trades
+- "Upgrade to see more" prompts throughout
+
+### Paid Tier 1: Wallet Watcher ($19/month)
+**Features:**
+- 7-day historical analysis
+- Real-time alerts for new trades
+- 1 wallet monitoring
+- Basic performance tracking
+- SMS/email notifications
+
+### Paid Tier 2: Multi-Wallet Pro ($59/month)
+**Features:**
+- 30-day historical analysis
+- 5 wallets monitoring
+- Advanced filtering options
+- Performance comparisons
+- Discord/Telegram webhooks
+- Priority alerts (faster notifications)
+
+### Paid Tier 3: Research Pro ($149/month)
+**Features:**
+- 90-day historical analysis
+- Unlimited wallet monitoring
+- Custom performance reports
+- API access for data export
+- White-label options
+- Strategy categorization (speed vs momentum)
 
 ### Tier 2: Research Dashboard
 **Features:**
@@ -121,12 +152,13 @@ Transform any profitable trader into a monetizable signal source through intelli
 
 ## Revenue Projections
 
-### Year 1 Targets
-- **Month 1-3**: 100 users ($2,900/month)
-- **Month 4-6**: 500 users ($14,500/month)
-- **Month 7-9**: 1,500 users ($43,500/month)
-- **Month 10-12**: 3,000 users ($87,000/month)
-- **Year 1 Total**: ~$500K ARR
+### Year 1 Targets (Updated Freemium Model)
+- **Month 1-3**: 1,000 free users, 50 paid ($950/month)
+- **Month 4-6**: 5,000 free users, 300 paid ($5,700/month)
+- **Month 7-9**: 15,000 free users, 800 paid ($15,200/month)
+- **Month 10-12**: 30,000 free users, 1,500 paid ($28,500/month)
+- **Conversion Rate**: 5% free to paid (industry standard)
+- **Year 1 Total**: ~$200K ARR with 30K free users
 
 ### Year 2-3 Scaling
 - **Research tier adoption**: 30% of users upgrade (+$150K ARR)
