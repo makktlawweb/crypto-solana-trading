@@ -38,13 +38,15 @@ export default function EliteAnalysisPage() {
   const [maxMarketCap, setMaxMarketCap] = useState("1000000");
 
   // Get confirmed tokens for analysis
-  const { data: confirmedTokens, isLoading: tokensLoading } = useQuery({
+  const { data: confirmedTokens, isLoading: tokensLoading, error: tokensError } = useQuery({
     queryKey: ["/api/blockchain-analysis/confirmed-tokens"],
+    retry: 2,
   });
 
   // Get multi-token winners
-  const { data: multiWinners, isLoading: winnersLoading } = useQuery({
+  const { data: multiWinners, isLoading: winnersLoading, error: winnersError } = useQuery({
     queryKey: ["/api/blockchain-analysis/multi-winners"],
+    retry: 2,
   });
 
   // Analyze specific token
@@ -112,6 +114,13 @@ export default function EliteAnalysisPage() {
                   <Loader2 className="w-6 h-6 animate-spin mr-2" />
                   Analyzing blockchain data...
                 </div>
+              ) : winnersError ? (
+                <Alert>
+                  <AlertDescription>
+                    Blockchain analysis is processing massive amounts of data. The system is working through thousands of transactions 
+                    to identify elite wallets. Please try the Token Analysis or confirmed tokens while the deep analysis completes.
+                  </AlertDescription>
+                </Alert>
               ) : multiWinners?.eliteWallets?.length > 0 ? (
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -301,6 +310,12 @@ export default function EliteAnalysisPage() {
                   <Loader2 className="w-6 h-6 animate-spin mr-2" />
                   Loading confirmed tokens...
                 </div>
+              ) : tokensError ? (
+                <Alert>
+                  <AlertDescription>
+                    Error loading confirmed tokens. The system is actively processing blockchain data.
+                  </AlertDescription>
+                </Alert>
               ) : confirmedTokens?.tokens?.length > 0 ? (
                 <div className="space-y-3">
                   {confirmedTokens.tokens.map((token: any) => (
