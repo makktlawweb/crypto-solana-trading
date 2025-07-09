@@ -30,9 +30,9 @@ export default function Dashboard() {
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <Bot className="text-primary text-2xl" />
-              <h1 className="text-xl font-bold text-white">Solana Trading Bot</h1>
+              <h1 className="text-xl font-bold text-white">Crypto Copy Platform</h1>
             </div>
-            <span className="text-sm text-gray-400">Strategy Backtesting Platform</span>
+            <span className="text-sm text-gray-400">Elite Wallet Intelligence System</span>
           </div>
           
           <div className="flex items-center space-x-6">
@@ -85,8 +85,9 @@ export default function Dashboard() {
               <span>Portfolio</span>
             </Link>
             <Link href="/elite-analysis" className="flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-300 hover:bg-gray-700 transition-colors">
-              <Shield className="w-5 h-5" />
+              <Shield className="w-5 h-5 text-yellow-400" />
               <span>Elite Analysis</span>
+              <span className="ml-auto text-xs bg-yellow-500 text-black px-2 py-1 rounded">NEW</span>
             </Link>
           </nav>
 
