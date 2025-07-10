@@ -7,6 +7,7 @@ import Dashboard from "@/pages/dashboard";
 import Portfolio from "@/pages/portfolio";
 import EliteAnalysis from "@/pages/elite-analysis";
 import EliteAnalysisDemo from "@/pages/elite-analysis-demo";
+import EliteAnalysisVerified from "@/pages/elite-analysis-verified";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -15,7 +16,8 @@ function Router() {
       <Route path="/" component={Dashboard} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/portfolio" component={Portfolio} />
-      <Route path="/elite-analysis" component={EliteAnalysisDemo} />
+      <Route path="/elite-analysis" component={EliteAnalysisVerified} />
+      <Route path="/elite-analysis-demo" component={EliteAnalysisDemo} />
       <Route path="/elite-analysis-live" component={EliteAnalysis} />
       <Route component={NotFound} />
     </Switch>

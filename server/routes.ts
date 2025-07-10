@@ -21,6 +21,7 @@ import { liveCopyTradingService } from "./services/liveCopyTrading";
 import { eliteWalletAnalysisService } from "./services/eliteWalletAnalysis";
 import { socialIntelligenceService } from "./services/socialIntelligence";
 import { blockchainAnalysisService } from "./services/blockchainAnalysis";
+import { walletVerificationService } from "./services/walletVerification";
 import { portfolioManager } from "./services/portfolioManager";
 import { insertTradingParametersSchema } from "@shared/schema";
 
