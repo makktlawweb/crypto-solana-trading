@@ -138,6 +138,33 @@ This is a full-stack Solana trading bot application built with React, TypeScript
 - July 10, 2025. Built bidirectional exploration allowing users to jump between wallet analysis and token analysis seamlessly with timing windows (5/15/30/60 minutes)
 - July 10, 2025. Addressed core UX challenge: most researchers have either a wallet address or token address, not both - system now supports flexible entry points for either scenario
 
+## Current Status & Weekend Review Notes
+
+**✅ Completed Systems:**
+- UnifiedExplorer with OR search capability (wallet OR token entry points)
+- Bidirectional exploration between wallet and token analysis
+- Interactive data manipulation with search, filter, sort, export
+- Real blockchain verification system with authenticated data sources
+- Complete frontend interface with multiple analysis modes
+
+**🔍 Weekend Review Focus:**
+- Timing windows functionality (5/15/30/60 minutes) - needs testing and validation
+- Backend API endpoints for explorer functionality - verify real data integration
+- Cross-verification with blockchain explorers for accuracy
+- Performance testing with actual wallet/token addresses
+
+**📋 Technical Implementation:**
+- Frontend: UnifiedExplorer component with dynamic search modes
+- Backend: New API endpoints at /api/explorer/wallet/:address and /api/explorer/token/:address
+- Integration: Real-time blockchain data through existing verification services
+- Export: CSV download and clipboard functionality ready
+
+**💡 Commercial Potential:**
+- Solves core researcher pain point: flexible entry points for exploration
+- Comprehensive data manipulation matches professional research needs
+- Verifiable results through multiple blockchain explorers
+- Foundation for subscription-based intelligence platform
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
