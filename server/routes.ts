@@ -1173,6 +1173,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get the 3 unverifiable demo wallet addresses
+  app.get("/api/wallet-verification/demo-addresses", async (req, res) => {
+    try {
+      const addresses = walletVerificationService.getDemoWalletAddresses();
+      res.json({
+        message: "These are the 3 demo wallet addresses that were fabricated and show no activity on blockchain explorers",
+        addresses,
+        verification: {
+          solscan: addresses.map(addr => `https://solscan.io/account/${addr}`),
+          solanaExplorer: addresses.map(addr => `https://explorer.solana.com/address/${addr}`)
+        }
+      });
+    } catch (error) {
+      console.error("Error getting demo addresses:", error);
+      res.status(500).json({ error: "Failed to get demo addresses" });
+    }
+  });
+
+  // Get comprehensive early buyer analysis for BONK, WIF, SLERF
+  app.get("/api/wallet-verification/early-buyer-analysis", async (req, res) => {
+    try {
+      const analysis = await walletVerificationService.getEarlyBuyerAnalysis();
+      res.json(analysis);
+    } catch (error) {
+      console.error("Error getting early buyer analysis:", error);
+      res.status(500).json({ error: "Failed to get early buyer analysis" });
+    }
+  });
+
+  // Find wallets that bought multiple major tokens early (the real legends)
+  app.get("/api/wallet-verification/multi-token-legends", async (req, res) => {
+    try {
+      const legends = await walletVerificationService.findMultiTokenEarlyBuyers();
+      
+      // Filter for wallets that bought BONK, WIF, and SLERF specifically
+      const bonkWifSlerf = legends.filter(legend => 
+        legend.tokensTraded.includes('BONK') && 
+        legend.tokensTraded.includes('WIF') && 
+        legend.tokensTraded.includes('SLERF')
+      );
+
+      res.json({
+        totalMultiTokenBuyers: legends.length,
+        bonkWifSlerfLegends: bonkWifSlerf.length,
+        legends: bonkWifSlerf.slice(0, 10), // Top 10 legends
+        breakdown: {
+          legends: legends.filter(l => l.rank === 'legend').length,
+          consistent: legends.filter(l => l.rank === 'consistent').length,
+          total: legends.length
+        },
+        tokenAddresses: walletVerificationService.getConfirmedTokens()
+      });
+    } catch (error) {
+      console.error("Error finding multi-token legends:", error);
+      res.status(500).json({ error: "Failed to find multi-token legends" });
+    }
+  });
+
   app.post("/api/automated-trading/emergency-stop", async (req, res) => {
     try {
       const { automatedCopyTradingService } = await import('./services/automatedCopyTrading');
