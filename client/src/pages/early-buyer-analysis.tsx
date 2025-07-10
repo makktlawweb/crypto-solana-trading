@@ -4,11 +4,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Crown, Star, Eye, ExternalLink, Clock, DollarSign, Activity, Copy, Target } from "lucide-react";
+import { Crown, Star, Eye, ExternalLink, Clock, DollarSign, Activity, Copy, Target, Database, Filter } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import WalletResultsExplorer from "@/components/WalletResultsExplorer";
+import WalletInsightsPanel from "@/components/WalletInsightsPanel";
+import UnifiedExplorer from "@/components/UnifiedExplorer";
 
 export default function EarlyBuyerAnalysis() {
-  const [selectedTab, setSelectedTab] = useState<"demo" | "analysis" | "legends">("demo");
+  const [selectedTab, setSelectedTab] = useState<"demo" | "analysis" | "legends" | "explorer">("demo");
+  const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Get the 3 unverifiable demo addresses
@@ -47,7 +51,7 @@ export default function EarlyBuyerAnalysis() {
       </div>
 
       {/* Tab Navigation */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Button
           variant={selectedTab === "demo" ? "default" : "outline"}
           onClick={() => setSelectedTab("demo")}
@@ -79,6 +83,17 @@ export default function EarlyBuyerAnalysis() {
             <Crown className="w-6 h-6 mx-auto mb-2" />
             <div className="font-semibold">Multi-Token Legends</div>
             <div className="text-sm text-muted-foreground">Bought all 3 early</div>
+          </div>
+        </Button>
+        <Button
+          variant={selectedTab === "explorer" ? "default" : "outline"}
+          onClick={() => setSelectedTab("explorer")}
+          className="h-auto p-4"
+        >
+          <div className="text-center">
+            <Database className="w-6 h-6 mx-auto mb-2" />
+            <div className="font-semibold">Results Explorer</div>
+            <div className="text-sm text-muted-foreground">Grab and manipulate data</div>
           </div>
         </Button>
       </div>
@@ -312,6 +327,14 @@ export default function EarlyBuyerAnalysis() {
                               >
                                 <Copy className="w-4 h-4" />
                               </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setSelectedWallet(legend.walletAddress)}
+                              >
+                                <Filter className="w-4 h-4 mr-1" />
+                                Deep Analysis
+                              </Button>
                             </div>
                             <div className="text-right">
                               <div className="text-sm font-semibold">{legend.totalEarlyBuys} early buys</div>
@@ -375,6 +398,30 @@ export default function EarlyBuyerAnalysis() {
             </CardContent>
           </Card>
         </div>
+      )}
+
+      {/* Explorer Tab */}
+      {selectedTab === "explorer" && (
+        <div className="space-y-4">
+          <UnifiedExplorer
+            onWalletSelect={(address) => setSelectedWallet(address)}
+            onTokenSelect={(address) => {
+              // Switch to token analysis mode
+              toast({
+                title: "Token Analysis",
+                description: `Analyzing token ${address.substring(0, 8)}...`,
+              });
+            }}
+          />
+        </div>
+      )}
+
+      {/* Wallet Insights Modal */}
+      {selectedWallet && (
+        <WalletInsightsPanel
+          walletAddress={selectedWallet}
+          onClose={() => setSelectedWallet(null)}
+        />
       )}
     </div>
   );

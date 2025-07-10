@@ -1231,6 +1231,109 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Unified Explorer Endpoints
+  
+  // Explore wallet activity with timing windows
+  app.get("/api/explorer/wallet/:walletAddress", async (req, res) => {
+    try {
+      const { walletAddress } = req.params;
+      const { timeWindow = "30" } = req.query;
+      
+      const activity = await walletVerificationService.verifyWalletActivity(walletAddress);
+      const velocity = await walletVerificationService.analyzeSpendingVelocity(walletAddress);
+      
+      if (!activity) {
+        return res.status(404).json({ error: "Wallet not found or no activity" });
+      }
+      
+      res.json({
+        wallet: {
+          address: walletAddress,
+          activity,
+          velocity,
+          timeWindow: parseInt(timeWindow as string),
+          exploration: {
+            solscan: `https://solscan.io/account/${walletAddress}`,
+            solanaExplorer: `https://explorer.solana.com/address/${walletAddress}`,
+            xray: `https://xray.helius.xyz/account/${walletAddress}`
+          }
+        }
+      });
+    } catch (error) {
+      console.error("Error exploring wallet:", error);
+      res.status(500).json({ error: "Failed to explore wallet" });
+    }
+  });
+
+  // Explore token with early buyer analysis
+  app.get("/api/explorer/token/:tokenAddress", async (req, res) => {
+    try {
+      const { tokenAddress } = req.params;
+      const { timeWindow = "30" } = req.query;
+      
+      const earlyBuyers = await walletVerificationService.findEarlyBuyers(
+        tokenAddress, 
+        parseInt(timeWindow as string) * 60 // Convert minutes to seconds
+      );
+      
+      res.json({
+        token: {
+          address: tokenAddress,
+          earlyBuyers: earlyBuyers.slice(0, 50), // Limit to first 50
+          timeWindow: parseInt(timeWindow as string),
+          totalEarlyBuyers: earlyBuyers.length,
+          exploration: {
+            solscan: `https://solscan.io/token/${tokenAddress}`,
+            solanaExplorer: `https://explorer.solana.com/address/${tokenAddress}`,
+            birdeye: `https://birdeye.so/token/${tokenAddress}`
+          }
+        }
+      });
+    } catch (error) {
+      console.error("Error exploring token:", error);
+      res.status(500).json({ error: "Failed to explore token" });
+    }
+  });
+
+  // Get comprehensive analysis for any address (wallet or token)
+  app.get("/api/explorer/analyze/:address", async (req, res) => {
+    try {
+      const { address } = req.params;
+      
+      // Try to determine if it's a wallet or token by analyzing the address
+      const walletActivity = await walletVerificationService.verifyWalletActivity(address);
+      
+      if (walletActivity) {
+        // It's a wallet
+        const velocity = await walletVerificationService.analyzeSpendingVelocity(address);
+        res.json({
+          type: "wallet",
+          data: {
+            address,
+            activity: walletActivity,
+            velocity,
+            insights: "Wallet with confirmed transaction history"
+          }
+        });
+      } else {
+        // Try as token
+        const earlyBuyers = await walletVerificationService.findEarlyBuyers(address, 1800);
+        res.json({
+          type: "token",
+          data: {
+            address,
+            earlyBuyers: earlyBuyers.slice(0, 20),
+            totalEarlyBuyers: earlyBuyers.length,
+            insights: "Token with early buyer analysis"
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Error analyzing address:", error);
+      res.status(500).json({ error: "Failed to analyze address" });
+    }
+  });
+
   app.post("/api/automated-trading/emergency-stop", async (req, res) => {
     try {
       const { automatedCopyTradingService } = await import('./services/automatedCopyTrading');
