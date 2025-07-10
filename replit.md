@@ -133,6 +133,10 @@ This is a full-stack Solana trading bot application built with React, TypeScript
 - July 7, 2025. Developed social intelligence framework combining Twitter growth velocity, creator credibility, and viral moment detection for prediction scoring
 - July 7, 2025. Built complete frontend interface with Elite Analysis page showing multi-token winners, token analysis tools, and confirmed target tracking
 - July 7, 2025. Validated commercial viability with freemium model: $29/month Pro tier, $99/month Enterprise, targeting 1K users and $25K+ MRR within 6 months
+- July 10, 2025. BREAKTHROUGH: Created UnifiedExplorer component with OR search capability - users can start with either wallet address OR token address for exploratory research
+- July 10, 2025. Implemented comprehensive "grab and explore" functionality with interactive data manipulation: search, filter, sort, export, CSV downloads, and watch lists
+- July 10, 2025. Built bidirectional exploration allowing users to jump between wallet analysis and token analysis seamlessly with timing windows (5/15/30/60 minutes)
+- July 10, 2025. Addressed core UX challenge: most researchers have either a wallet address or token address, not both - system now supports flexible entry points for either scenario
 
 ## User Preferences
 
