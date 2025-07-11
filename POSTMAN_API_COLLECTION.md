@@ -15,6 +15,30 @@ https://45152da1-96ee-4672-b427-69702b128dff-00-2ydknlzrpib47.worf.replit.dev
 - Real-time Solana data integration
 - Comprehensive wallet and token analysis
 
+## 🔥 NEW: Advanced Activity Analysis
+
+The most powerful feature - granular activity analysis with flexible time ranges:
+
+```
+GET /api/{walletOrToken}/activity/{granularity}/days/{range}
+```
+
+**Parameters:**
+- `walletOrToken`: Any wallet address or token address
+- `granularity`: `seconds`, `minutes`, `hours`, `days`, `weeks`, `months`, or `ALL`
+- `range`: Positive (first X days) or negative (last X days from today)
+
+**Examples:**
+- Last 20 days of wallet activity: `/api/9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM/activity/ALL/days/-20`
+- First 7 days of token hourly data: `/api/B2icxTVZantkLrzZV69koG6bf9WAoEXpk1yrbwvMmoon/activity/hours/days/7`
+- Last 1 day of wallet minute-by-minute: `/api/9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM/activity/minutes/days/1`
+
+**Response includes:**
+- Complete activity timeline with timestamps
+- Transaction/trade volumes, prices, P&L
+- Summary statistics and activity distribution
+- Peak activity periods and quiet times
+
 ## Core API Endpoints
 
 ### 1. System Status

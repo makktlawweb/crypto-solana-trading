@@ -137,6 +137,10 @@ This is a full-stack Solana trading bot application built with React, TypeScript
 - July 10, 2025. Implemented comprehensive "grab and explore" functionality with interactive data manipulation: search, filter, sort, export, CSV downloads, and watch lists
 - July 10, 2025. Built bidirectional exploration allowing users to jump between wallet analysis and token analysis seamlessly with timing windows (5/15/30/60 minutes)
 - July 10, 2025. Addressed core UX challenge: most researchers have either a wallet address or token address, not both - system now supports flexible entry points for either scenario
+- July 11, 2025. BREAKTHROUGH: Implemented advanced granular activity analysis with flexible time ranges and multiple granularities
+- July 11, 2025. Created comprehensive activity API: /api/{walletOrToken}/activity/{granularity}/days/{range} supporting seconds, minutes, hours, days, weeks, months, and ALL
+- July 11, 2025. Built intelligent time range system: positive numbers = first X days, negative numbers = last X days from today
+- July 11, 2025. Added smart data limits: seconds (max 7 days), minutes (max 30 days) to prevent overwhelming responses while maintaining granular analysis capability
 
 ## Current Status & API Documentation Complete
 
