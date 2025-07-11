@@ -2,8 +2,12 @@
 
 ## Base URL
 ```
-https://workspace.makktlaw.repl.co
+https://45152da1-96ee-4672-b427-69702b128dff-00-2ydknlzrpib47.worf.replit.dev
 ```
+
+## Alternative URLs (try these if main URL doesn't work)
+- `https://workspace-makktlaw.replit.app` (when deployed)
+- `https://workspace.makktlaw.repl.co` (legacy format)
 
 ## ✅ API STATUS: LIVE AND OPERATIONAL
 - All endpoints are active and responding

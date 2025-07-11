@@ -1,9 +1,9 @@
 # API Access Guide
 
 ## Web Interface
-- **Main App**: https://your-repl-url.repl.co
-- **Dashboard**: https://your-repl-url.repl.co/dashboard
-- **Elite Analysis**: https://your-repl-url.repl.co/early-buyer-analysis
+- **Main App**: https://45152da1-96ee-4672-b427-69702b128dff-00-2ydknlzrpib47.worf.replit.dev
+- **Dashboard**: https://45152da1-96ee-4672-b427-69702b128dff-00-2ydknlzrpib47.worf.replit.dev/dashboard
+- **Elite Analysis**: https://45152da1-96ee-4672-b427-69702b128dff-00-2ydknlzrpib47.worf.replit.dev/early-buyer-analysis
 
 ## API Endpoints
 
