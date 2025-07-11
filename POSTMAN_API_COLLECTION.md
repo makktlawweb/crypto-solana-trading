@@ -38,6 +38,46 @@ GET /api/{walletOrToken}/activity/{granularity}/days/{range}
 - Transaction/trade volumes, prices, P&L
 - Summary statistics and activity distribution
 - Peak activity periods and quiet times
+- **NEW: Detailed transaction ledger with individual trades**
+- Exact buy/sell actions with token names, amounts, prices
+- Transaction signatures for blockchain verification
+- Individual P&L per transaction
+
+**Sample Response with Transaction Details:**
+```json
+{
+  "address": "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
+  "type": "wallet",
+  "dataPoints": [
+    {
+      "timestamp": "2024-07-11T17:38:23.576Z",
+      "transactions": 11,
+      "volume": 220.887,
+      "profitLoss": 24.795,
+      "transactionDetails": [
+        {
+          "timestamp": "2024-07-11T17:38:23.576Z",
+          "action": "buy",
+          "token": "WIF",
+          "tokenAddress": "wifpkv1oynjcon",
+          "amount": 2939,
+          "priceUsd": 782.18,
+          "signature": "k38f5t7frrmmwvigp6vach",
+          "profitLoss": 54.53
+        },
+        {
+          "timestamp": "2024-07-11T19:49:18.121Z",
+          "action": "buy", 
+          "token": "PEPE",
+          "amount": 8060,
+          "priceUsd": 979,
+          "profitLoss": 52.48
+        }
+      ]
+    }
+  ]
+}
+```
 
 ## Core API Endpoints
 
