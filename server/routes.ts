@@ -1173,6 +1173,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get verified elite wallets with confirmed activity
+  app.get("/api/wallet-verification/verified-elites", async (req, res) => {
+    try {
+      const verifiedWallets = await walletVerificationService.getVerifiedEliteWallets();
+      
+      // Get activity for each verified wallet
+      const walletsWithActivity = await Promise.all(
+        verifiedWallets.map(async (address) => {
+          const activity = await walletVerificationService.verifyWalletActivity(address);
+          return {
+            address,
+            activity,
+            explorerLinks: {
+              solscan: `https://solscan.io/account/${address}`,
+              solanaExplorer: `https://explorer.solana.com/address/${address}`,
+              xray: `https://xray.helius.xyz/account/${address}`
+            }
+          };
+        })
+      );
+
+      res.json({
+        totalVerified: verifiedWallets.length,
+        wallets: walletsWithActivity.filter(w => w.activity), // Only return wallets with confirmed activity
+        message: "These are verified elite wallets with confirmed blockchain activity",
+        verification: "All addresses can be cross-verified on Solscan, Solana Explorer, and Helius"
+      });
+    } catch (error) {
+      console.error("Error getting verified elites:", error);
+      res.status(500).json({ error: "Failed to get verified elites" });
+    }
+  });
+
   // Get the 3 unverifiable demo wallet addresses
   app.get("/api/wallet-verification/demo-addresses", async (req, res) => {
     try {
