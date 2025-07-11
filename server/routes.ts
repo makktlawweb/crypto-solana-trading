@@ -1319,13 +1319,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const volume = baseActivity * 500; // 0-500 SOL volume
         const profitLoss = (Math.random() - 0.5) * 100; // -50 to +50 SOL
         
+        // Generate detailed transaction ledger for this period
+        const transactionDetails = [];
+        for (let j = 0; j < transactions; j++) {
+          const txTime = new Date(timestamp.getTime() + (j * (intervalMs / Math.max(transactions, 1))));
+          const action = Math.random() > 0.5 ? 'buy' : 'sell';
+          const tokenNames = ['WIF', 'BONK', 'PEPE', 'FARTCOIN', 'MAGA', 'SLERF', 'MEW', 'POPCAT', 'DEGEN', 'SHIB'];
+          const tokenName = tokenNames[Math.floor(Math.random() * tokenNames.length)];
+          const amount = Math.random() * 10000;
+          const priceUsd = Math.random() * 1000;
+          
+          transactionDetails.push({
+            timestamp: txTime.toISOString(),
+            action,
+            token: tokenName,
+            tokenAddress: `${tokenName.toLowerCase()}${Math.random().toString(36).substring(2, 15)}`,
+            amount: parseFloat(amount.toFixed(0)),
+            priceUsd: parseFloat(priceUsd.toFixed(2)),
+            signature: `${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`,
+            profitLoss: parseFloat(((Math.random() - 0.5) * priceUsd * 0.3).toFixed(2))
+          });
+        }
+        
         activity = {
           ...activity,
           transactions,
           volume: parseFloat(volume.toFixed(3)),
           uniqueTokens: Math.floor(baseActivity * 15),
           profitLoss: parseFloat(profitLoss.toFixed(3)),
-          gasUsed: parseFloat((transactions * 0.000005).toFixed(6))
+          gasUsed: parseFloat((transactions * 0.000005).toFixed(6)),
+          transactionDetails: transactionDetails
         };
         
         totalActivity += transactions;
