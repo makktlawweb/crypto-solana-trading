@@ -147,6 +147,7 @@ This is a full-stack Solana trading bot application built with React, TypeScript
 - July 11, 2025. Created comprehensive commercial deployment strategy with dual authentication (crypto + traditional), payment processing, and hosting infrastructure
 - July 11, 2025. Outlined ambitious expansion roadmap: BASE/HYPERLIQUID/SUI chains, airdrop automation, DEX arbitrage - all deferred until current platform commercialized
 - July 11, 2025. User confirmed weekend development focus on authentication, payments, and production hosting for immediate commercial launch
+- July 11, 2025. User suggested visual chart enhancement: plotting buy/sell trades with dates and profit/loss visualization - added to Phase 1.5 roadmap
 
 ## Current Status & API Documentation Complete
 

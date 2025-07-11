@@ -4,6 +4,28 @@
 **Status**: Production-ready, commercialization phase
 **Timeline**: Weekend development for commercial launch
 
+### Enhanced Visualization Features (Phase 1.5)
+**Chart Integration for Transaction Analysis:**
+- Buy/sell scatter plots with profit/loss color coding
+- Time-series charts showing trading patterns over time
+- Volume-weighted price charts with trend analysis
+- Interactive hover details for each transaction
+- Exportable charts for research reports
+
+**Technical Implementation:**
+- Chart.js integration (already available in stack)
+- Interactive tooltips with transaction details
+- Real-time chart updates for live monitoring
+- Mobile-responsive chart layouts
+- CSV export with chart data
+
+**Visual Design Concepts:**
+- Green dots for profitable trades, red for losses
+- Size of dots proportional to trade volume
+- Timeline scrubber for date range selection
+- Overlay buy/sell signals on price charts
+- Cumulative P&L curve over time
+
 ## Phase 2: Multi-Chain Expansion (Q2 2025)
 
 ### BASE Chain Integration
