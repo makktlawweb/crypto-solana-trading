@@ -1,0 +1,575 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Crypto Copy Analytics API",
+    "description": "Comprehensive Solana wallet and token analytics with real-time blockchain data integration",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Crypto Copy Analytics",
+      "url": "https://45152da1-96ee-4672-b427-69702b128dff-00-2ydknlzrpib47.worf.replit.dev"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://45152da1-96ee-4672-b427-69702b128dff-00-2ydknlzrpib47.worf.replit.dev",
+      "description": "Production server"
+    }
+  ],
+  "paths": {
+    "/api/status": {
+      "get": {
+        "summary": "Get system status",
+        "description": "Returns current Solana connection status and system health",
+        "tags": ["System"],
+        "responses": {
+          "200": {
+            "description": "System status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "solana": {
+                      "type": "object",
+                      "properties": {
+                        "connected": {"type": "boolean"},
+                        "slot": {"type": "integer"}
+                      }
+                    },
+                    "monitoring": {"type": "boolean"},
+                    "activePositions": {"type": "integer"},
+                    "timestamp": {"type": "string", "format": "date-time"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/parameters": {
+      "get": {
+        "summary": "Get trading parameters",
+        "description": "Returns current trading strategy parameters",
+        "tags": ["Trading"],
+        "responses": {
+          "200": {
+            "description": "Trading parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {"type": "integer"},
+                    "watchThreshold": {"type": "number"},
+                    "buyTrigger": {"type": "number"},
+                    "buyPrice": {"type": "number"},
+                    "takeProfitMultiplier": {"type": "number"},
+                    "stopLossPercent": {"type": "number"},
+                    "maxAge": {"type": "integer"},
+                    "positionSize": {"type": "number"},
+                    "dexSources": {
+                      "type": "array",
+                      "items": {"type": "string"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tokens": {
+      "get": {
+        "summary": "Get monitored tokens",
+        "description": "Returns list of tokens currently being monitored",
+        "tags": ["Trading"],
+        "responses": {
+          "200": {
+            "description": "List of monitored tokens",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {"type": "integer"},
+                      "address": {"type": "string"},
+                      "name": {"type": "string"},
+                      "symbol": {"type": "string"},
+                      "marketCap": {"type": "number"},
+                      "price": {"type": "number"},
+                      "volume24h": {"type": "number"},
+                      "age": {"type": "integer"},
+                      "status": {"type": "string"},
+                      "dexSource": {"type": "string"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/trades": {
+      "get": {
+        "summary": "Get trading history",
+        "description": "Returns historical trading data",
+        "tags": ["Trading"],
+        "responses": {
+          "200": {
+            "description": "Trading history",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {"type": "integer"},
+                      "tokenAddress": {"type": "string"},
+                      "action": {"type": "string", "enum": ["buy", "sell"]},
+                      "amount": {"type": "number"},
+                      "price": {"type": "number"},
+                      "timestamp": {"type": "string", "format": "date-time"},
+                      "pnl": {"type": "number"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/alerts": {
+      "get": {
+        "summary": "Get system alerts",
+        "description": "Returns current system alerts and notifications",
+        "tags": ["System"],
+        "responses": {
+          "200": {
+            "description": "System alerts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {"type": "integer"},
+                      "type": {"type": "string"},
+                      "message": {"type": "string"},
+                      "tokenAddress": {"type": "string", "nullable": true},
+                      "timestamp": {"type": "string", "format": "date-time"},
+                      "isRead": {"type": "boolean"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/portfolio/stats": {
+      "get": {
+        "summary": "Get portfolio statistics",
+        "description": "Returns current portfolio performance metrics",
+        "tags": ["Portfolio"],
+        "responses": {
+          "200": {
+            "description": "Portfolio statistics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "watchedTokens": {"type": "integer"},
+                    "activeOrders": {"type": "integer"},
+                    "todayPnL": {"type": "number"},
+                    "totalPnL": {"type": "number"},
+                    "totalTrades": {"type": "integer"},
+                    "winRate": {"type": "number"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/copy-trading/status": {
+      "get": {
+        "summary": "Get copy trading status",
+        "description": "Returns current copy trading configuration and status",
+        "tags": ["Copy Trading"],
+        "responses": {
+          "200": {
+            "description": "Copy trading status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "isMonitoring": {"type": "boolean"},
+                    "monitoredWallets": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "walletAddress": {"type": "string"},
+                          "isActive": {"type": "boolean"},
+                          "copyBuys": {"type": "boolean"},
+                          "copySells": {"type": "boolean"},
+                          "minMarketCap": {"type": "number"},
+                          "maxMarketCap": {"type": "number"},
+                          "minVolume": {"type": "number"},
+                          "positionSizePercent": {"type": "number"},
+                          "delaySeconds": {"type": "integer"}
+                        }
+                      }
+                    },
+                    "recentSignals": {"type": "array"},
+                    "signalCount": {"type": "integer"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/copy-trading/start": {
+      "post": {
+        "summary": "Start copy trading",
+        "description": "Starts the copy trading monitoring system",
+        "tags": ["Copy Trading"],
+        "responses": {
+          "200": {
+            "description": "Copy trading started successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean"},
+                    "message": {"type": "string"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/copy-trading/stop": {
+      "post": {
+        "summary": "Stop copy trading",
+        "description": "Stops the copy trading monitoring system",
+        "tags": ["Copy Trading"],
+        "responses": {
+          "200": {
+            "description": "Copy trading stopped successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean"},
+                    "message": {"type": "string"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/wallet-verification/verified-elites": {
+      "get": {
+        "summary": "Get verified elite wallets",
+        "description": "Returns list of verified elite trading wallets with performance metrics",
+        "tags": ["Analytics"],
+        "responses": {
+          "200": {
+            "description": "Verified elite wallets",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "verifiedElites": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "walletAddress": {"type": "string"},
+                          "performance": {
+                            "type": "object",
+                            "properties": {
+                              "totalTrades": {"type": "integer"},
+                              "winRate": {"type": "number"},
+                              "totalPnL": {"type": "number"},
+                              "avgHoldTime": {"type": "number"}
+                            }
+                          },
+                          "classification": {"type": "string"}
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/wallet-verification/multi-token-legends": {
+      "get": {
+        "summary": "Get multi-token legends",
+        "description": "Returns wallets that were early buyers of multiple successful tokens",
+        "tags": ["Analytics"],
+        "responses": {
+          "200": {
+            "description": "Multi-token legend wallets",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "walletAddress": {"type": "string"},
+                      "tokensFound": {"type": "integer"},
+                      "totalValue": {"type": "number"},
+                      "classification": {"type": "string"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/explorer/wallet/{address}": {
+      "get": {
+        "summary": "Analyze wallet activity",
+        "description": "Returns detailed analysis of wallet trading activity",
+        "tags": ["Analytics"],
+        "parameters": [
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "description": "Wallet address to analyze",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Wallet analysis data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "address": {"type": "string"},
+                    "type": {"type": "string"},
+                    "totalTrades": {"type": "integer"},
+                    "totalVolume": {"type": "number"},
+                    "netPnL": {"type": "number"},
+                    "winRate": {"type": "number"},
+                    "avgHoldTime": {"type": "number"},
+                    "recentActivity": {"type": "array"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/explorer/token/{address}": {
+      "get": {
+        "summary": "Analyze token early buyers",
+        "description": "Returns analysis of early buyers for a specific token",
+        "tags": ["Analytics"],
+        "parameters": [
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "description": "Token address to analyze",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Token early buyer analysis",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tokenAddress": {"type": "string"},
+                    "tokenName": {"type": "string"},
+                    "totalBuyers": {"type": "integer"},
+                    "earlyBuyers": {"type": "array"},
+                    "priceData": {"type": "object"},
+                    "marketMetrics": {"type": "object"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/{walletOrToken}/activity/{granularity}/days/{range}": {
+      "get": {
+        "summary": "Advanced granular activity analysis",
+        "description": "Returns detailed activity analysis with flexible time ranges and granularities",
+        "tags": ["Analytics"],
+        "parameters": [
+          {
+            "name": "walletOrToken",
+            "in": "path",
+            "required": true,
+            "description": "Wallet or token address to analyze",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "granularity",
+            "in": "path",
+            "required": true,
+            "description": "Data granularity",
+            "schema": {
+              "type": "string",
+              "enum": ["seconds", "minutes", "hours", "days", "weeks", "months", "ALL"]
+            }
+          },
+          {
+            "name": "range",
+            "in": "path",
+            "required": true,
+            "description": "Time range (positive = first X days, negative = last X days)",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Granular activity analysis",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "address": {"type": "string"},
+                    "type": {"type": "string"},
+                    "granularity": {"type": "string"},
+                    "range": {"type": "integer"},
+                    "dataPoints": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "timestamp": {"type": "string", "format": "date-time"},
+                          "transactions": {"type": "integer"},
+                          "volume": {"type": "number"},
+                          "profitLoss": {"type": "number"},
+                          "transactionDetails": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "timestamp": {"type": "string", "format": "date-time"},
+                                "action": {"type": "string", "enum": ["buy", "sell"]},
+                                "token": {"type": "string"},
+                                "tokenAddress": {"type": "string"},
+                                "amount": {"type": "number"},
+                                "priceUsd": {"type": "number"},
+                                "signature": {"type": "string"},
+                                "profitLoss": {"type": "number"}
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "summary": {
+                      "type": "object",
+                      "properties": {
+                        "totalVolume": {"type": "number"},
+                        "totalTransactions": {"type": "integer"},
+                        "netPnL": {"type": "number"},
+                        "winRate": {"type": "number"},
+                        "mostActiveHour": {"type": "string"},
+                        "bestPerformingToken": {"type": "string"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "API key for authentication (future implementation)"
+      },
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT token for authentication (future implementation)"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "System",
+      "description": "System status and health endpoints"
+    },
+    {
+      "name": "Trading",
+      "description": "Trading parameters and monitoring"
+    },
+    {
+      "name": "Portfolio",
+      "description": "Portfolio management and statistics"
+    },
+    {
+      "name": "Copy Trading",
+      "description": "Copy trading functionality"
+    },
+    {
+      "name": "Analytics",
+      "description": "Advanced wallet and token analytics"
+    }
+  ]
+}
