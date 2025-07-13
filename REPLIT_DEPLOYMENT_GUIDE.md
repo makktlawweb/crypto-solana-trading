@@ -160,11 +160,16 @@ Your system is already configured with:
 ## Cost Monitoring
 
 ### Expected Monthly Costs
-- **Railway Hosting**: $5/month
+- **Railway Web Service**: $3-7/month
+- **Railway PostgreSQL**: $3-8/month  
 - **Birdeye API**: $10-30/month (depends on usage)
-- **Database**: Included with Railway
 - **Monitoring**: Free tier available
-- **Total**: ~$15-35/month for testing
+- **Total**: ~$16-45/month for testing
+
+### Railway Free Credits
+- New accounts get $5 free credits per month
+- Your 2-week test will likely be FREE or under $5 total
+- Perfect for validating the copy trading system
 
 ### Optimization Strategies
 - Monitor API usage patterns
