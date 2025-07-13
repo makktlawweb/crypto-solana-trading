@@ -9,6 +9,7 @@ import EliteAnalysis from "@/pages/elite-analysis";
 import EliteAnalysisDemo from "@/pages/elite-analysis-demo";
 import EliteAnalysisVerified from "@/pages/elite-analysis-verified";
 import EarlyBuyerAnalysis from "@/pages/early-buyer-analysis";
+import CopyTradingAdmin from "@/pages/copy-trading-admin";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -21,6 +22,7 @@ function Router() {
       <Route path="/elite-analysis-demo" component={EliteAnalysisDemo} />
       <Route path="/elite-analysis-live" component={EliteAnalysis} />
       <Route path="/early-buyer-analysis" component={EarlyBuyerAnalysis} />
+      <Route path="/copy-trading-admin" component={CopyTradingAdmin} />
       <Route component={NotFound} />
     </Switch>
   );
