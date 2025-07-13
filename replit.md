@@ -188,6 +188,8 @@ This is a full-stack Solana trading bot application built with React, TypeScript
 
 Preferred communication style: Simple, everyday language.
 
+User finds API documentation extremely valuable and expects to reference it frequently - appreciates having comprehensive, accessible documentation that can be quickly retrieved. Values being able to ask for the same information multiple times without friction.
+
 ## Commercial Vision
 
 **SaaS Copy Trading Platform - "SolanaTrader Pro":**
