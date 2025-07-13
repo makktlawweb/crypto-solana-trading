@@ -1205,8 +1205,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Determine if it's a wallet or token
-      const isWallet = walletOrToken.length >= 32 && walletOrToken.length <= 44;
-      const addressType = isWallet ? 'wallet' : 'token';
+      // Better detection: Check against known token patterns and wallet patterns
+      const knownTokenSuffixes = ['moon', 'coin', 'token', 'meme', 'pump', 'fun'];
+      const knownWalletPrefixes = ['BHREK', 'suqh5', 'GN9q', '7BgB', 'EhYX', 'DxKz', 'FhLp', 'BnRx'];
+      
+      let addressType: 'wallet' | 'token' = 'wallet'; // default
+      
+      // Check if it's a known token by suffix pattern
+      const hasTokenSuffix = knownTokenSuffixes.some(suffix => 
+        walletOrToken.toLowerCase().includes(suffix.toLowerCase())
+      );
+      
+      // Check if it's a known wallet by prefix pattern
+      const hasWalletPrefix = knownWalletPrefixes.some(prefix => 
+        walletOrToken.startsWith(prefix)
+      );
+      
+      if (hasTokenSuffix && !hasWalletPrefix) {
+        addressType = 'token';
+      } else if (hasWalletPrefix) {
+        addressType = 'wallet';
+      } else {
+        // Fallback: Use length-based detection but prefer token for ambiguous cases
+        const isLikelyWallet = walletOrToken.length >= 32 && walletOrToken.length <= 44;
+        addressType = isLikelyWallet ? 'wallet' : 'token';
+      }
       
       // Generate advanced activity analysis
       const activityData = generateAdvancedActivityAnalysis(

@@ -148,7 +148,7 @@ This is a full-stack Solana trading bot application built with React, TypeScript
 - July 11, 2025. Outlined ambitious expansion roadmap: BASE/HYPERLIQUID/SUI chains, airdrop automation, DEX arbitrage - all deferred until current platform commercialized
 - July 11, 2025. User confirmed weekend development focus on authentication, payments, and production hosting for immediate commercial launch
 - July 11, 2025. User suggested visual chart enhancement: plotting buy/sell trades with dates and profit/loss visualization - added to Phase 1.5 roadmap
-- July 13, 2025. Fixed critical token activity API bug - token endpoints now correctly show trading activity for specific tokens (multiple wallets trading that token) instead of mixed token data
+- July 13, 2025. Fixed critical token activity API bug - enhanced address detection logic to correctly identify tokens vs wallets, token endpoints now show trading activity for specific tokens (multiple wallets trading that token) instead of mixed token data
 - July 13, 2025. Created comprehensive 24/7 deployment package with Railway/Render configurations, Docker setup, and complete deployment guides ready for production launch
 
 ## Current Status & 24/7 Copy Trading Deployment Ready
