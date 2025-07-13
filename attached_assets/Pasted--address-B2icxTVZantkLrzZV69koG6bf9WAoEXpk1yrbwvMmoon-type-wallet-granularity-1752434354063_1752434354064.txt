@@ -1,0 +1,66 @@
+{
+  "address": "B2icxTVZantkLrzZV69koG6bf9WAoEXpk1yrbwvMmoon",
+  "type": "wallet",
+  "granularity": "hours",
+  "range": 7,
+  "rangeDescription": "First 7 days",
+  "dataPoints": [
+    {
+      "timestamp": "2024-07-13T19:11:55.503Z",
+      "period": 1,
+      "transactions": 10,
+      "volume": 203.036,
+      "uniqueTokens": 6,
+      "profitLoss": -32.698,
+      "gasUsed": 0.00005,
+      "transactionDetails": [
+        {
+          "timestamp": "2024-07-13T19:11:55.503Z",
+          "action": "sell",
+          "token": "MEW",
+          "tokenAddress": "mewqjjm3vvssrq",
+          "amount": 9877,
+          "priceUsd": 552.99,
+          "signature": "g66q92rqzae1n50eei4hhj",
+          "profitLoss": -73.92
+        },
+        {
+          "timestamp": "2024-07-13T19:17:55.503Z",
+          "action": "buy",
+          "token": "MEW",
+          "tokenAddress": "mewcv73sv2xg0a",
+          "amount": 3166,
+          "priceUsd": 626.21,
+          "signature": "yci51lth7ic5zqmdl2b7b",
+          "profitLoss": -77.28
+        },
+        {
+          "timestamp": "2024-07-13T19:23:55.503Z",
+          "action": "buy",
+          "token": "DEGEN",
+          "tokenAddress": "degen0phj5k8d5jij",
+          "amount": 9943,
+          "priceUsd": 518.67,
+          "signature": "j4uuxh2fo4qmwq2cykludb",
+          "profitLoss": -48.47
+        },
+        {
+          "timestamp": "2024-07-13T19:29:55.503Z",
+          "action": "sell",
+          "token": "POPCAT",
+          "tokenAddress": "popcat592ph4zpdi8",
+          "amount": 3744,
+          "priceUsd": 22.92,
+          "signature": "0jnk5nm9g9t8qh1ozm2ic2",
+          "profitLoss": 1.48
+        },
+        {
+          "timestamp": "2024-07-13T19:35:55.503Z",
+          "action": "buy",
+          "token": "WIF",
+          "tokenAddress": "wifkfehtf5hsek",
+          "amount": 5118,
+          "priceUsd": 347.39,
+          "signature": "0oenmxq9krgqqv1odwujps",
+          "profitLoss": 3.6
+        },

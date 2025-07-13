@@ -1353,23 +1353,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         totalActivity += transactions;
       } else {
-        // Realistic token activity patterns
-        const volatility = Math.random() * 0.5 + 0.5; // 0.5-1.0 volatility
-        const basePrice = 0.00001 + (Math.random() * 0.001); // Micro-cap pricing
-        const volume = Math.random() * 50000; // 0-50K volume
-        const trades = Math.floor(Math.random() * 200); // 0-200 trades
+        // TOKEN ACTIVITY: Show all trading activity for this specific token
+        const baseActivity = Math.random();
+        const transactions = Math.floor(baseActivity * 150); // 0-150 transactions for this token
+        const volume = baseActivity * 25000; // 0-25K SOL volume for this token
+        const uniqueTraders = Math.floor(baseActivity * 50); // 0-50 different traders
+        
+        // Generate detailed transaction ledger for this specific token
+        const transactionDetails = [];
+        
+        // Get token name from address (mock extraction)
+        const tokenName = address.length > 20 ? address.substring(0, 8).toUpperCase() : 'TOKEN';
+        
+        for (let j = 0; j < transactions; j++) {
+          const txTime = new Date(timestamp.getTime() + (j * (intervalMs / Math.max(transactions, 1))));
+          const action = Math.random() > 0.5 ? 'buy' : 'sell';
+          const amount = Math.random() * 50000; // Token amount
+          const priceUsd = Math.random() * 0.01; // Token price in USD
+          const solAmount = Math.random() * 10; // SOL amount
+          
+          // Generate realistic trader addresses
+          const traderAddresses = [
+            'GN9qpRMrdZVQ5rcYCgi46eLSFP228899Y8vwzW9xLzWk',
+            'BHREKFkPQgAtDs8Vb1UfLkUpjG6ScidTjHaCWFuG2AtX',
+            'suqh5sHtr8HyJ7q8scBimULPkPpA557prMG47xCHQfK',
+            '7BgBvyjrZX1YKz4oh9mjb8ZScatkkwb8DzFx4PYRMmGR',
+            'EhYXNBK5v4xKpqhZ8gYGhvR9K1JSfVHqaXNEzBqsZx4K',
+            'DxKzQF8v5hAEP5bCTvnWLNqHRJGK7qgCjqfRm3xvKwPz',
+            'FhLpNvZ3AjRKZmSz5XpVQJ6KfPrRz8uVxf4LGHCfnWEt',
+            'BnRxWKfHxKzVnQgZ2YjAyQyQ5gTYfPqRzJ8xKmHvCdDf'
+          ];
+          
+          const trader = traderAddresses[Math.floor(Math.random() * traderAddresses.length)];
+          
+          transactionDetails.push({
+            timestamp: txTime.toISOString(),
+            action,
+            token: tokenName,
+            tokenAddress: address, // This specific token
+            trader: trader,
+            amount: parseFloat(amount.toFixed(0)),
+            priceUsd: parseFloat(priceUsd.toFixed(6)),
+            solAmount: parseFloat(solAmount.toFixed(3)),
+            signature: `${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`,
+            marketCap: parseFloat((priceUsd * 1000000000).toFixed(2)),
+            volume24h: parseFloat((volume * 0.1).toFixed(2))
+          });
+        }
         
         activity = {
           ...activity,
-          price: parseFloat(basePrice.toFixed(8)),
-          volume: parseFloat(volume.toFixed(2)),
-          trades,
-          holders: Math.floor(Math.random() * 2000),
-          marketCap: parseFloat((basePrice * 1000000000).toFixed(2)),
-          volatility: parseFloat(volatility.toFixed(3))
+          transactions,
+          volume: parseFloat(volume.toFixed(3)),
+          uniqueTraders,
+          tokenName,
+          tokenAddress: address,
+          avgPrice: parseFloat((Math.random() * 0.01).toFixed(6)),
+          priceChange24h: parseFloat(((Math.random() - 0.5) * 0.5).toFixed(4)),
+          transactionDetails: transactionDetails
         };
         
-        totalActivity += trades;
+        totalActivity += transactions;
       }
       
       dataPoints.push(activity);
