@@ -12,14 +12,17 @@ COPY postcss.config.js ./
 COPY components.json ./
 COPY drizzle.config.ts ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install all dependencies (including devDependencies for build)
+RUN npm ci
 
 # Copy source code
 COPY . .
 
 # Build the application
 RUN npm run build
+
+# Clean up devDependencies after build
+RUN npm prune --production
 
 # Expose port
 EXPOSE 3000
