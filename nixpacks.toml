@@ -1,0 +1,12 @@
+[phases.build]
+dependsOn = ["install"]
+cmds = [
+  "npx vite build",
+  "npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist"
+]
+
+[phases.install]
+cmds = ["npm ci"]
+
+[start]
+cmd = "npm start"
