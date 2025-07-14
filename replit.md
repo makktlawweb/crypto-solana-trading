@@ -153,6 +153,7 @@ This is a full-stack Solana trading bot application built with React, TypeScript
 - July 13, 2025. Confirmed zero external API costs - system runs entirely on free Solana RPC and DexScreener APIs, providing massive competitive advantage over platforms paying $100-500/month for market data
 - July 13, 2025. Fixed Railway deployment issues - corrected Dockerfile to install all dependencies during build phase then clean up, resolved environment variable configuration for production deployment
 - July 14, 2025. Resolved Railway build failures - updated Dockerfile to use npx commands directly instead of package.json build script, bypassing "vite: not found" errors in Docker container builds
+- July 14, 2025. Fixed Railway builder configuration - changed railway.json from NIXPACKS to DOCKERFILE to ensure Docker build process uses corrected npx commands
 
 ## Current Status & 24/7 Copy Trading Deployment Ready
 
