@@ -207,6 +207,8 @@ User appreciates the collaborative building process and has expressed satisfacti
 
 User prefers lean operations with minimal support costs to maximize profitability. Interested in API-first commercial launch approach over frontend-heavy solutions. Plans to take Friday off and hopes to launch commercially late this week.
 
+User works day job intermittently and has limited availability (20 minutes until 8 PM). Prefers to keep all project discussions in one chat window for context continuity. Has temporarily moved copy trading funds to capitalize on manual opportunities while automated system is being finalized.
+
 ## Commercial Vision
 
 **SaaS Copy Trading Platform - "SolanaTrader Pro":**
