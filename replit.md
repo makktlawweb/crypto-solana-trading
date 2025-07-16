@@ -155,6 +155,7 @@ This is a full-stack Solana trading bot application built with React, TypeScript
 - July 14, 2025. Resolved Railway build failures - updated Dockerfile to use npx commands directly instead of package.json build script, bypassing "vite: not found" errors in Docker container builds
 - July 14, 2025. Fixed Railway builder configuration - changed railway.json from NIXPACKS to DOCKERFILE to ensure Docker build process uses corrected npx commands
 - July 16, 2025. Prepared complete deployment package with fresh GitHub repository - resolved all Monday night vite build issues, integrated QuickNode RPC, and created comprehensive deployment documentation
+- July 16, 2025. CRITICAL FIX: Added `--yes` flags to npx commands in Dockerfile to resolve Monday night exit code 127 error (vite command not found) - deployment package ready for Railway
 
 ## Current Status & 24/7 Copy Trading Deployment Ready
 
