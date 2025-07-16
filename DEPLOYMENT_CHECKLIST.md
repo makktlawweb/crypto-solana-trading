@@ -2,7 +2,7 @@
 
 ## Monday Night Issues RESOLVED ✅
 
-**✅ Fixed**: Dockerfile uses `npx` commands directly  
+**✅ Fixed**: Dockerfile uses `npx --yes` commands (resolves exit code 127 error)  
 **✅ Fixed**: Railway configuration optimized  
 **✅ Fixed**: QuickNode RPC integrated (no rate limits)  
 **✅ Fixed**: All environment variables documented  

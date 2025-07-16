@@ -18,7 +18,8 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Build the application using npx directly (fixes Monday night vite error)
+# Build the application - FIXED VERSION (resolves Monday night error)
+# Using --yes flag to auto-install missing packages
 RUN npx --yes vite build && npx --yes esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
 
 # Clean up devDependencies after build
