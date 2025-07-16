@@ -5,8 +5,10 @@ export class SolanaService {
   private rpcUrl: string;
 
   constructor() {
+    // Use custom RPC if provided, otherwise use official Solana RPC
     this.rpcUrl = process.env.SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com";
     this.connection = new Connection(this.rpcUrl, "confirmed");
+    console.log(`Using Solana RPC: ${this.rpcUrl}`);
   }
 
   async getConnectionStatus(): Promise<{ connected: boolean; slot: number | null }> {
