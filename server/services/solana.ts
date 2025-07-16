@@ -5,8 +5,8 @@ export class SolanaService {
   private rpcUrl: string;
 
   constructor() {
-    // Use custom RPC if provided, otherwise use official Solana RPC
-    this.rpcUrl = process.env.SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com";
+    // Use QuickNode RPC for better performance and rate limits
+    this.rpcUrl = process.env.SOLANA_RPC_URL || "https://indulgent-green-owl.solana-mainnet.quiknode.pro/c1197c32d25f2acb206fc108b0c7434395fdb63d/";
     this.connection = new Connection(this.rpcUrl, "confirmed");
     console.log(`Using Solana RPC: ${this.rpcUrl}`);
   }
