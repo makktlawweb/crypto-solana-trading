@@ -157,6 +157,7 @@ This is a full-stack Solana trading bot application built with React, TypeScript
 - July 16, 2025. Prepared complete deployment package with fresh GitHub repository - resolved all Monday night vite build issues, integrated QuickNode RPC, and created comprehensive deployment documentation
 - July 16, 2025. CRITICAL FIX: Added `--yes` flags to npx commands in Dockerfile to resolve Monday night exit code 127 error (vite command not found) - deployment package ready for Railway
 - July 16, 2025. BREAKTHROUGH: Docker build successful on Railway using `./node_modules/.bin/vite` direct paths - resolved vite command not found completely, deployment now failing only on port configuration mismatch (app uses 5000, Railway expects PORT env var)
+- July 16, 2025. Identified deployment requirements: DATABASE_URL (PostgreSQL) and NODE_ENV=production - created Dockerfile.with-db that auto-runs database migrations on startup, eliminating manual setup steps
 
 ## Current Status & 24/7 Copy Trading Deployment Ready
 
