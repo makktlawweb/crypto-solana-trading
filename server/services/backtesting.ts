@@ -2,7 +2,7 @@ import { storage } from "../storage";
 import { dexApiService } from "./dexApi";
 import { historicalDataService, type HistoricalTokenData } from "./historicalData";
 import { walletAnalysisService, type WalletAnalysis } from "./walletAnalysis";
-import type { StrategyConfig, InsertTrade, InsertBacktestResult, BacktestResult } from "@shared/schema";
+import type { StrategyConfig, InsertTrade, InsertBacktestResult, BacktestResult } from "../../shared/schema.js";
 import { nanoid } from "nanoid";
 
 export interface BacktestTrade {

@@ -1,5 +1,5 @@
 import { storage } from '../storage';
-import { Trade, Token } from '@shared/schema';
+import { Trade, Token } from '../../shared/schema.js';
 
 export interface PortfolioPosition {
   tokenAddress: string;

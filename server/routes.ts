@@ -23,7 +23,7 @@ import { socialIntelligenceService } from "./services/socialIntelligence";
 import { blockchainAnalysisService } from "./services/blockchainAnalysis";
 import { walletVerificationService } from "./services/walletVerification";
 import { portfolioManager } from "./services/portfolioManager";
-import { insertTradingParametersSchema } from "@shared/schema";
+import { insertTradingParametersSchema } from "../shared/schema.js";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get current trading parameters

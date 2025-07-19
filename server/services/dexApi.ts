@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { InsertToken } from "@shared/schema";
+import type { InsertToken } from "../../shared/schema.js";
 
 export interface TokenData {
   address: string;

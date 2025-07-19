@@ -1,6 +1,6 @@
 import axios from "axios";
 import { storage } from "../storage";
-import type { InsertToken } from "@shared/schema";
+import type { InsertToken } from "../../shared/schema.js";
 
 export interface TokenPricePoint {
   timestamp: Date;

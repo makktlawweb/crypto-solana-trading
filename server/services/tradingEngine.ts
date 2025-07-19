@@ -1,7 +1,7 @@
 import { storage } from "../storage";
 import { dexApiService } from "./dexApi";
 import { solanaService } from "./solana";
-import type { Token, StrategyConfig, InsertTrade, InsertAlert } from "@shared/schema";
+import type { Token, StrategyConfig, InsertTrade, InsertAlert } from "../../shared/schema.js";
 
 export class TradingEngine {
   private isMonitoring: boolean = false;

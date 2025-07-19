@@ -1,6 +1,6 @@
 import { storage } from "../storage";
 import { dexApiService } from "./dexApi";
-import type { Token } from "@shared/schema";
+import type { Token } from "../../shared/schema.js";
 
 export interface MomentumSignal {
   tokenAddress: string;

@@ -9,14 +9,14 @@ import type {
   InsertAlert,
   BacktestResult,
   InsertBacktestResult,
-} from "@shared/schema";
+} from "../shared/schema.js";
 import {
   tradingParameters,
   tokens,
   trades,
   alerts,
   backtestResults,
-} from "@shared/schema";
+} from "../shared/schema.js";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 
