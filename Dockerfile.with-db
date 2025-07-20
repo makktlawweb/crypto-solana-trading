@@ -14,6 +14,11 @@ COPY . .
 
 # Build directly without npm scripts to avoid PATH issues
 RUN ./node_modules/.bin/vite build
+
+# Remove vite.ts file before bundling to prevent any imports
+RUN rm -f server/vite.ts server/index.ts server/index.production.ts
+
+# Bundle the clean production server
 RUN ./node_modules/.bin/esbuild server/index.simple.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
 
 # Clean up devDependencies
