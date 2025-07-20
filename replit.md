@@ -159,6 +159,7 @@ This is a full-stack Solana trading bot application built with React, TypeScript
 - July 16, 2025. BREAKTHROUGH: Docker build successful on Railway using `./node_modules/.bin/vite` direct paths - resolved vite command not found completely, deployment now failing only on port configuration mismatch (app uses 5000, Railway expects PORT env var)
 - July 16, 2025. Identified deployment requirements: DATABASE_URL (PostgreSQL) and NODE_ENV=production - created Dockerfile.with-db that auto-runs database migrations on startup, eliminating manual setup steps
 - July 19, 2025. Fixed module resolution error by replacing all TypeScript path aliases (@shared/schema) with relative imports (../shared/schema.js) in server files - esbuild bundling now works correctly for Railway deployment
+- July 19, 2025. Created production-ready server/index.ts with zero Vite dependencies - eliminates runtime import errors in production Docker containers, deployment time reduced to 2:20
 
 ## Current Status & 24/7 Copy Trading Deployment Ready
 
