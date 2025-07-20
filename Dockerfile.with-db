@@ -14,7 +14,7 @@ COPY . .
 
 # Build directly without npm scripts to avoid PATH issues
 RUN ./node_modules/.bin/vite build
-RUN ./node_modules/.bin/esbuild server/index.production.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+RUN ./node_modules/.bin/esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
 
 # Clean up devDependencies
 RUN npm prune --production
