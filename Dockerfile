@@ -3,33 +3,41 @@ FROM node:18-alpine
 # Set working directory
 WORKDIR /app
 
-# Copy package files
+# Copy package files first for better caching
 COPY package*.json ./
-COPY tsconfig.json ./
-COPY vite.config.ts ./
-COPY tailwind.config.ts ./
-COPY postcss.config.js ./
-COPY components.json ./
-COPY drizzle.config.ts ./
 
-# Install all dependencies (including devDependencies for build)
+# Install dependencies
 RUN npm ci
 
-# Copy source code
+# Copy all source code
 COPY . .
 
-# Build the application using npx directly (fixes Monday night vite error)
-RUN npx --yes vite build && npx --yes esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+# Build directly without npm scripts to avoid PATH issues
+RUN ./node_modules/.bin/vite build
 
-# Clean up devDependencies after build
+# Copy the production server over the development one
+RUN cp server/index.simple.ts server/index.ts
+
+# Remove vite.ts file to prevent any imports
+RUN rm -f server/vite.ts
+
+# Bundle the production server
+RUN ./node_modules/.bin/esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+# Clean up devDependencies
 RUN npm prune --production
 
-# Expose port
-EXPOSE 3000
+# Expose port 5000 (matches your app)
+EXPOSE 5000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3000/api/status || exit 1
+# Create startup script that runs database migration then starts app
+RUN echo '#!/bin/sh\n\
+if [ -n "$DATABASE_URL" ]; then\n\
+  echo "Running database migration..."\n\
+  npx drizzle-kit push\n\
+fi\n\
+echo "Starting application..."\n\
+npm start' > start.sh && chmod +x start.sh
 
-# Start the application
-CMD ["npm", "start"]
+# Start with database migration
+CMD ["./start.sh"]

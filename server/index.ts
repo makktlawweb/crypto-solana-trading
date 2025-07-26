@@ -1,6 +1,12 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
+import path from "path";
+
+// Simple production logger
+function log(message: string) {
+  const timestamp = new Date().toLocaleTimeString();
+  console.log(`${timestamp} [express] ${message}`);
+}
 
 const app = express();
 app.use(express.json());
@@ -47,24 +53,17 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
-    await setupVite(app, server);
-  } else {
-    serveStatic(app);
-  }
+  // Serve static files from dist directory (built by Vite)
+  app.use(express.static("dist", { index: false }));
+  
+  // Fallback to index.html for SPA routing
+  app.use("*", (_req, res) => {
+    res.sendFile(path.resolve("dist", "index.html"));
+  });
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = 5000;
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
+  // Use Railway's PORT environment variable, fallback to 5000
+  const port = parseInt(process.env.PORT || "5000");
+  server.listen(port, "0.0.0.0", () => {
     log(`serving on port ${port}`);
   });
 })();
