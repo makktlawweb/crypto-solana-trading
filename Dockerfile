@@ -30,14 +30,5 @@ RUN npm prune --production
 # Expose port 5000 (matches your app)
 EXPOSE 5000
 
-# Create startup script that runs database migration then starts app
-RUN echo '#!/bin/sh\n\
-if [ -n "$DATABASE_URL" ]; then\n\
-  echo "Running database migration..."\n\
-  npx drizzle-kit push\n\
-fi\n\
-echo "Starting application..."\n\
-npm start' > start.sh && chmod +x start.sh
-
-# Start with database migration
-CMD ["./start.sh"]
+# Start the application directly
+CMD ["npm", "start"]
